@@ -1,0 +1,35 @@
+{
+    "psi-header.templates": [
+        {
+            "language": "csharp",
+            "template": [
+                "Copyright (c) <<author>> 2026.",
+                "This file is part of TestBuilder.",
+                "Licensed under the GNU Lesser General Public License v3 (LGPL v3).",
+                "See the LICENSE file in the project root for full details.",
+            ]       
+        }
+    ],
+    "psi-header.lang-config": [
+        {
+            "language": "csharp",
+            "begin": "/*",
+            "prefix": " * ",
+            "end": "*/"
+        }
+    ],
+    "psi-header.config": {
+        "forceToTop": true,
+        "license": "LGPL v3",
+        "author": "Vinícius Bastos da Silva",
+        "blankLinesAfter": 1
+    },
+    "psi-header.changes-tracking": {
+        "autoHeader": "autoSave",
+        "enforceHeader": true
+    },
+    "psi-header.license-reference": {
+        "uri": "LICENSE.txt",
+        "uriIsLocalFile": true
+    }
+}
