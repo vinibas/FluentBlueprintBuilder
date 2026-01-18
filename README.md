@@ -54,6 +54,46 @@ public class SampleTarget
 }
 ```
 
+### Tip
+
+If you do not want to create a separate class for the Preset, you can use the Builder class itself instead. See an example below:
+
+```csharp
+public class SampleBuilder : TestObjectBuilder<SampleBuilder, SampleBuilder, SampleTarget>
+{
+    public string Name { get; set; } = string.Empty;
+    public int Age { get; set; }
+    public string Nickname { get; set; } = string.Empty;
+
+    private SampleBuilder SetValues(string name, int age, string nickname)
+    {
+        Name = name;
+        Age = age;
+        Nickname = nickname;
+        
+        return this;
+    }
+
+    protected override void ConfigurePresets(IDictionary<string, Func<SampleBuilder>> presets)
+        => presets["sample"] = () => SetValues("Sample Name", 30, "SampleNick");
+
+    protected override SampleTarget GetInstance(SampleBuilder preset)
+        => new ()
+        {
+            Name = preset.Name,
+            Age = preset.Age,
+            Nickname = preset.Nickname
+        };
+}
+
+public class SampleTarget
+{
+    public string Name { get; set; } = string.Empty;
+    public int Age { get; set; }
+    public string Nickname { get; set; } = string.Empty;
+}
+```
+
 ## Using the Builder in your code
 
 Using the Builder class is very simple, utilizing a fluent language via 3 methods: `Create`, to create the builder object passing the desired Preset; `Set`, to change values in your preset using lambda expressions; and `Build` to construct your final object.
