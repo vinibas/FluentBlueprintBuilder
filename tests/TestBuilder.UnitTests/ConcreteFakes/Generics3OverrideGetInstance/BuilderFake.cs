@@ -5,7 +5,7 @@
  * See the LICENSE file in the project root for full details.
 */
 
-namespace TestBuilder.UnitTests.ConcreteFakes;
+namespace TestBuilder.UnitTests.ConcreteFakes.Generics3OverrideGetInstance;
 
 public class BuilderFake : TestObjectBuilder<BuilderFake, PresetFake, TargetFake>
 {

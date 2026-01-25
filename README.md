@@ -16,10 +16,10 @@ First, you need to install the library in your test project as a NuGet package:
 
 ## Creating your Builder class
 
-You must create your builder classes by inheriting from `TestObjectBuilder<T_Builder, T_Presets, T_Target>`, where the type arguments are:
-- **T_Builder**: The builder class itself that you are creating;
-- **T_Presets**: A class that will contain the values used to create your final class. These values can vary according to scenarios or be modified during the creation of your builder;
-- **T_Target**: The type of the object you intend to create at the end with your builder object.
+You must create your builder classes by inheriting from `TestObjectBuilder<TBuilder, TPresets, TTarget>`, where the type arguments are:
+- **TBuilder**: The builder class itself that you are creating;
+- **TPresets**: A class that will contain the values used to create your final class. These values can vary according to scenarios or be modified during the creation of your builder;
+- **TTarget**: The type of the object you intend to create at the end with your builder object.
 
 When inheriting from `TestObjectBuilder`, you must provide a public parameterless constructor so that the instance can be created internally by the `Create` method. You also need to implement the abstract methods `ConfigurePresets` and `GetInstance`.
 

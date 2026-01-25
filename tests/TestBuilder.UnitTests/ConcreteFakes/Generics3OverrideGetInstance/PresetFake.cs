@@ -5,10 +5,6 @@
  * See the LICENSE file in the project root for full details.
 */
 
-namespace TestBuilder.UnitTests.ConcreteFakes;
+namespace TestBuilder.UnitTests.ConcreteFakes.Generics3OverrideGetInstance;
 
-public class TargetFake
-{
-    public List<string> Tags { get; set; } = new();
-    public Dictionary<string, object> Metadata { get; set; } = new();
-}
+public record PresetFake(List<string> Tags, Dictionary<string, object> Metadata);

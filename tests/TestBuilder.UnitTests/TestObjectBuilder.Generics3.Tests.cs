@@ -5,11 +5,11 @@
  * See the LICENSE file in the project root for full details.
 */
 
-using TestBuilder.UnitTests.ConcreteFakes;
+using TestBuilder.UnitTests.ConcreteFakes.Generics3OverrideGetInstance;
 
 namespace TestBuilder.UnitTests;
 
-public class TestObjectBuilderAdvancedTests
+public class TestObjectBuilderGenerics3Tests
 {
     [Fact]
     public void Build_WithoutPresetKey_ShouldUseFirstPreset()
