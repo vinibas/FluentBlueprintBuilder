@@ -1,4 +1,4 @@
-# ViniBas.TestBuilder
+# ViniBas.FluentBlueprintBuilder
 
 Copyright (c) Vinícius Bastos da Silva 2026
 Licensed under the GNU Lesser General Public License v3 (LGPL v3).
@@ -6,13 +6,13 @@ See the LICENSE.txt file for details.
 
 # Introduction
 
-TestBuilder is a library that provides an abstract class to assist in building fake objects for testing using a fluent syntax. It allows for the creation of pre-configured states, as well as individual value configuration during usage.
+ViniBas.FluentBlueprintBuilder is a library that provides an abstract class to assist in building fake objects for testing using a fluent syntax. It allows for the creation of pre-configured states, as well as individual value configuration during usage.
 
 # How to use
 
 First, you need to install the library in your test project as a NuGet package:
 
-`dotnet add package ViniBas.TestBuilder`
+`dotnet add package ViniBas.FluentBlueprintBuilder`
 
 ## Creating your Builder class
 

@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="src/TestBuilder/TestBuilder.csproj" />
-  <Project Path="tests/TestBuilder.UnitTests/TestBuilder.UnitTests.csproj" />
-</Solution>

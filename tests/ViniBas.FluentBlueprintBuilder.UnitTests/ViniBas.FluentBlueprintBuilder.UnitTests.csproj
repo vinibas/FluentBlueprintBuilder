@@ -15,6 +15,6 @@
         <Using Include="Xunit" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\src\TestBuilder\TestBuilder.csproj" />
+        <ProjectReference Include="..\..\src\ViniBas.FluentBlueprintBuilder\ViniBas.FluentBlueprintBuilder.csproj" />
     </ItemGroup>
 </Project>

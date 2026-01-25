@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Vinícius Bastos da Silva 2026.
- * This file is part of TestBuilder.
+ * This file is part of FluentBlueprintBuilder.
  * Licensed under the GNU Lesser General Public License v3 (LGPL v3).
  * See the LICENSE file in the project root for full details.
 */
@@ -8,7 +8,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace TestBuilder;
+namespace ViniBas.FluentBlueprintBuilder;
 
 /// <summary>
 /// Abstract base class to help create test objects using a fluent builder API.

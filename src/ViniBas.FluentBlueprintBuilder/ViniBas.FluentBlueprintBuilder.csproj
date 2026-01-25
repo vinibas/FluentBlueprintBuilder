@@ -13,15 +13,15 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <PackageId>ViniBas.TestBuilder</PackageId>
+        <PackageId>ViniBas.FluentBlueprintBuilder</PackageId>
         <VersionPrefix>1.0.0</VersionPrefix>
         <Authors>Vinícius Bastos da Silva</Authors>
         <Description>.</Description>
         <Copyright>Copyright (c) Vinícius Bastos da Silva 2026</Copyright>
         <PackageLicenseExpression>LGPL-3.0-only</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageProjectUrl>https://github.com/vinibas/TestBuilder</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/vinibas/TestBuilder</RepositoryUrl>
-        <PackageTags>TestBuilder;Test Builder;Fake test;ViniBas</PackageTags>
+        <PackageProjectUrl>https://github.com/vinibas/FluentBlueprintBuilder</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/vinibas/FluentBlueprintBuilder</RepositoryUrl>
+        <PackageTags>FluentBlueprintBuilder;Fluent Builder;Blueprint Builder;Test Builder;Fake test;ViniBas</PackageTags>
     </PropertyGroup>
 </Project>
