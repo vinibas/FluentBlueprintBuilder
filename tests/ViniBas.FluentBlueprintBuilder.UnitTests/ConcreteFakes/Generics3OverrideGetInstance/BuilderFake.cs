@@ -7,7 +7,7 @@
 
 namespace ViniBas.FluentBlueprintBuilder.UnitTests.ConcreteFakes.Generics3OverrideGetInstance;
 
-public class BuilderFake : TestObjectBuilder<BuilderFake, BlueprintFake, TargetFake>
+public class BuilderFake : BlueprintBuilder<BuilderFake, BlueprintFake, TargetFake>
 {
     protected override void ConfigureBlueprints(IDictionary<string, Func<BlueprintFake>> blueprints)
     {

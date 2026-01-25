@@ -16,12 +16,12 @@ First, you need to install the library in your test project as a NuGet package:
 
 ## Creating your Builder class
 
-You must create your builder classes by inheriting from `TestObjectBuilder<TBuilder, TBlueprint, TTarget>`, where the type arguments are:
+You must create your builder classes by inheriting from `BlueprintBuilder<TBuilder, TBlueprint, TTarget>`, where the type arguments are:
 - **TBuilder**: The builder class itself that you are creating;
 - **TBlueprint**: A class that will contain the values used to create your final class. These values can vary according to scenarios or be modified during the creation of your builder;
 - **TTarget**: The type of the object you intend to create at the end with your builder object.
 
-When inheriting from `TestObjectBuilder`, you must provide a public parameterless constructor so that the instance can be created internally by the `Create` method. You also need to implement the abstract methods `ConfigureBlueprints` and `GetInstance`.
+When inheriting from `BlueprintBuilder`, you must provide a public parameterless constructor so that the instance can be created internally by the `Create` method. You also need to implement the abstract methods `ConfigureBlueprints` and `GetInstance`.
 
 In the `ConfigureBlueprints` method, you will receive a dictionary instance as a parameter, and you must add at least one Blueprint. A Blueprint consists of an identifier key and a creation `Func` for your Blueprint. These blueprints will be used according to the `blueprintKey` passed in the `Create` method.
 
@@ -30,7 +30,9 @@ In the `GetInstance` method, you will create your final class based on the value
 ### Example
 
 ```csharp
-public class SampleBuilder : TestObjectBuilder<SampleBuilder, SampleBlueprint, SampleTarget>
+using ViniBas.FluentBlueprintBuilder;
+
+public class SampleBuilder : BlueprintBuilder<SampleBuilder, SampleBlueprint, SampleTarget>
 {
     protected override void ConfigureBlueprints(IDictionary<string, Func<SampleBlueprint>> blueprints)
         => blueprints["sample"] = () => new SampleBlueprint("Sample Name", 30, "Sample Nickname");
@@ -59,7 +61,7 @@ public class SampleTarget
 If you do not want to create a separate class for the Blueprint, you can use the Builder class itself instead. See an example below:
 
 ```csharp
-public class SampleBuilder : TestObjectBuilder<SampleBuilder, SampleBuilder, SampleTarget>
+public class SampleBuilder : BlueprintBuilder<SampleBuilder, SampleBuilder, SampleTarget>
 {
     public string Name { get; set; } = string.Empty;
     public int Age { get; set; }
@@ -70,7 +72,7 @@ public class SampleBuilder : TestObjectBuilder<SampleBuilder, SampleBuilder, Sam
         Name = name;
         Age = age;
         Nickname = nickname;
-        
+
         return this;
     }
 

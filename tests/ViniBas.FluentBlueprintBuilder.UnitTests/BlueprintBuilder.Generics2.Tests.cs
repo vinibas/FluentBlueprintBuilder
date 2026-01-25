@@ -9,7 +9,7 @@ using ViniBas.FluentBlueprintBuilder.UnitTests.ConcreteFakes.Generics2OriginalGe
 
 namespace ViniBas.FluentBlueprintBuilder.UnitTests;
 
-public class TestObjectBuilderGenerics2Tests
+public class BlueprintBuilderGenerics2Tests
 {
     private readonly DateTime _defaultDate = new DateTime(2026, 2, 10);
 

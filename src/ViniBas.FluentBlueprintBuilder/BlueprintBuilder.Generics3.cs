@@ -22,11 +22,11 @@ namespace ViniBas.FluentBlueprintBuilder;
 /// <remarks>
 /// Implementations must provide a public parameterless constructor and register at least one blueprint in <c>ConfigureBlueprints</c>.
 /// The base implementation of <c>GetInstance</c> will attempt to construct <typeparamref name="TTarget"/>
-/// by matching constructor parameter names to blueprint property names (case-insensitive) and copying blueprint properties 
+/// by matching constructor parameter names to blueprint property names (case-insensitive) and copying blueprint properties
 /// to target properties by name. Override <c>GetInstance</c> to provide custom logic.
 /// </remarks>
-public abstract class TestObjectBuilder<TBuilder, TBlueprint, TTarget>
-    where TBuilder : TestObjectBuilder<TBuilder, TBlueprint, TTarget>, new()
+public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
+    where TBuilder : BlueprintBuilder<TBuilder, TBlueprint, TTarget>, new()
 {
     private readonly IDictionary<string, Func<TBlueprint>> _blueprints =
         new Dictionary<string, Func<TBlueprint>>(StringComparer.OrdinalIgnoreCase);
@@ -41,20 +41,20 @@ public abstract class TestObjectBuilder<TBuilder, TBlueprint, TTarget>
 
             if (_blueprints.Count == 0)
                 throw new InvalidOperationException("No variants defined for this builder.");
-            
+
             if (BlueprintKey is not null && !_blueprints.ContainsKey(BlueprintKey))
                 throw new KeyNotFoundException($"Blueprint '{BlueprintKey}' not found. Available blueprints: {string.Join(", ", _blueprints.Keys)}");
-        
+
             _selectedBlueprint = BlueprintKey is not null ?
                 _blueprints[BlueprintKey].Invoke() :
                 _blueprints.First().Value.Invoke();
-            
+
             return _selectedBlueprint;
         }
     }
 
     protected string? BlueprintKey { get; private set; }
-    
+
     /// <summary>
     /// Creates a new instance of the builder object, which can be used to configure and build the target object.
     /// </summary>
@@ -114,7 +114,7 @@ public abstract class TestObjectBuilder<TBuilder, TBlueprint, TTarget>
     ///    or target properties without matching blueprint are ignored.
     /// Notes:
     /// - Both public and non-public constructors/properties are considered.
-    /// - This default implementation requires blueprint property values to be type-compatible with 
+    /// - This default implementation requires blueprint property values to be type-compatible with
     /// constructor/setter parameter types; it does not perform implicit conversions.
     /// </summary>
     /// <param name="blueprint">The blueprint instance to use for creating the target object.</param>
@@ -134,11 +134,11 @@ public abstract class TestObjectBuilder<TBuilder, TBlueprint, TTarget>
 
         if (selectedCtor is null)
             throw new InvalidOperationException($"No suitable constructor found on {targetType.FullName} matching blueprint properties of type {blueprintType.FullName}.");
-        
+
         var ctorArgValues = selectedCtorParams.Select(p => blueprintPropsNameValues[p.Name ?? string.Empty]).ToArray();
-        
+
         var instance = (TTarget)selectedCtor.Invoke(ctorArgValues);
-        
+
         var targetSettersOutsideTheCtor = ListOfSettersOfTheTypeThatAreNotInTheParameterExceptionsAsDictionary(targetType, selectedCtorParams);
 
         SetValuesToAllCompatibleSetters(targetSettersOutsideTheCtor, blueprintPropsNameValues);
@@ -169,7 +169,7 @@ public abstract class TestObjectBuilder<TBuilder, TBlueprint, TTarget>
             selectedCtorParams = [];
             return null;
         }
-        
+
         Dictionary<string, MethodInfo> ListOfSettersOfTheTypeThatAreNotInTheParameterExceptionsAsDictionary(Type type, ParameterInfo[] parameterExceptions)
             => targetType
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
@@ -183,7 +183,7 @@ public abstract class TestObjectBuilder<TBuilder, TBlueprint, TTarget>
             {
                 if (!valuesToSet.TryGetValue(setter.Key, out var blueprintPropValue))
                     continue;
-                
+
                 if (!IsParameterCompatible(setter.Value.GetParameters()[0], setter.Key))
                     continue;
 
@@ -195,13 +195,13 @@ public abstract class TestObjectBuilder<TBuilder, TBlueprint, TTarget>
         {
             if (parameterName is null)
                 parameterName = parameterInfo.Name;
-            
+
             if (!blueprintPropsNameValues.TryGetValue(parameterName ?? string.Empty, out var blueprintPropValue))
                 return false;
-            
+
             if (blueprintPropValue is null)
                 return !parameterInfo.ParameterType.IsValueType || Nullable.GetUnderlyingType(parameterInfo.ParameterType) != null;
-            
+
             return parameterInfo.ParameterType.IsAssignableFrom(blueprintPropValue?.GetType());
         }
     }

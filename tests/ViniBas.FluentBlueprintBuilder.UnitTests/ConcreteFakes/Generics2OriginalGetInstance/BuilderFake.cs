@@ -7,7 +7,7 @@
 
 namespace ViniBas.FluentBlueprintBuilder.UnitTests.ConcreteFakes.Generics2OriginalGetInstance;
 
-public class BuilderFake : TestObjectBuilder<BuilderFake, TargetFake>
+public class BuilderFake : BlueprintBuilder<BuilderFake, TargetFake>
 {
     public List<string> Tags { get; set; } = [ "tag1", "tag2" ];
     public Dictionary<string, object> Metadata { get; set; } =
@@ -15,14 +15,14 @@ public class BuilderFake : TestObjectBuilder<BuilderFake, TargetFake>
     public byte CustomValueOutsideBlueprint { get; set; } = 10;
 }
 
-public class BuilderFakeMissingTag : TestObjectBuilder<BuilderFakeMissingTag, TargetFake>
+public class BuilderFakeMissingTag : BlueprintBuilder<BuilderFakeMissingTag, TargetFake>
 {
     public Dictionary<string, object> Metadata { get; set; } =
         new Dictionary<string, object> { ["key1"] = "value1" };
     public byte CustomValueOutsideBlueprint { get; set; } = 10;
 }
 
-public class BuilderFakeMissingMetadata : TestObjectBuilder<BuilderFakeMissingMetadata, TargetFake>
+public class BuilderFakeMissingMetadata : BlueprintBuilder<BuilderFakeMissingMetadata, TargetFake>
 {
     public List<string> Tags { get; set; } = [ "tag1", "tag2" ];
     public byte CustomValueOutsideBlueprint { get; set; } = 10;

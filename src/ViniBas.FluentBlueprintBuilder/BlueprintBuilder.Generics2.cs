@@ -20,12 +20,12 @@ namespace ViniBas.FluentBlueprintBuilder;
 /// <remarks>
 /// Implementations must provide a public parameterless constructor and register at least one blueprint in <c>ConfigureBlueprints</c>.
 /// The base implementation of <c>GetInstance</c> will attempt to construct <typeparamref name="TTarget"/>
-/// by matching constructor parameter names to blueprint property names (case-insensitive) and copying blueprint properties 
+/// by matching constructor parameter names to blueprint property names (case-insensitive) and copying blueprint properties
 /// to target properties by name. Override <c>GetInstance</c> to provide custom logic.
 /// </remarks>
-public abstract class TestObjectBuilder<TBuilder, TTarget>
-    : TestObjectBuilder<TBuilder, TBuilder, TTarget>
-    where TBuilder : TestObjectBuilder<TBuilder, TTarget>, new()
+public abstract class BlueprintBuilder<TBuilder, TTarget>
+    : BlueprintBuilder<TBuilder, TBuilder, TTarget>
+    where TBuilder : BlueprintBuilder<TBuilder, TTarget>, new()
 {
     /// <summary>
     /// Registers a factory that returns the current builder instance in the blueprints dictionary with the key "default".

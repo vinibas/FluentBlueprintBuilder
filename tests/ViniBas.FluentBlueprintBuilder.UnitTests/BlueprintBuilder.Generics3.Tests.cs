@@ -9,7 +9,7 @@ using ViniBas.FluentBlueprintBuilder.UnitTests.ConcreteFakes.Generics3OverrideGe
 
 namespace ViniBas.FluentBlueprintBuilder.UnitTests;
 
-public class TestObjectBuilderGenerics3Tests
+public class BlueprintBuilderGenerics3Tests
 {
     [Fact]
     public void Build_WithoutBlueprintKey_ShouldUseFirstBlueprint()
