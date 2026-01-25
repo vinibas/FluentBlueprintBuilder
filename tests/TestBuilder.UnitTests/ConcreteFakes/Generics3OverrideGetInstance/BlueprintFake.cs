@@ -7,4 +7,4 @@
 
 namespace TestBuilder.UnitTests.ConcreteFakes.Generics3OverrideGetInstance;
 
-public record PresetFake(List<string> Tags, Dictionary<string, object> Metadata);
+public record BlueprintFake(List<string> Tags, Dictionary<string, object> Metadata);

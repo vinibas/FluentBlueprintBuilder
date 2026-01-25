@@ -12,7 +12,7 @@ namespace TestBuilder.UnitTests;
 public class TestObjectBuilderGenerics3Tests
 {
     [Fact]
-    public void Build_WithoutPresetKey_ShouldUseFirstPreset()
+    public void Build_WithoutBlueprintKey_ShouldUseFirstBlueprint()
     {
         // Act
         var targetCreated = BuilderFake.Create().Build();
@@ -23,7 +23,7 @@ public class TestObjectBuilderGenerics3Tests
     }
 
     [Fact]
-    public void Build_PassingPresetKey_ShouldUseSpecificPreset()
+    public void Build_PassingBlueprintKey_ShouldUseSpecificBlueprint()
     {
         // Act
         var targetCreated = BuilderFake.Create("alternative").Build();
@@ -34,7 +34,7 @@ public class TestObjectBuilderGenerics3Tests
     }
 
     [Fact]
-    public void Set_Property_ShouldOverridePresetValue()
+    public void Set_Property_ShouldOverrideBlueprintValue()
     {
         // Arrange
         var builderCreated = BuilderFake.Create();
@@ -51,10 +51,10 @@ public class TestObjectBuilderGenerics3Tests
     }
 
     [Fact]
-    public void Build_WithInvalidPresetKey_ShouldThrowKeyNotFoundException()
+    public void Build_WithInvalidBlueprintKey_ShouldThrowKeyNotFoundException()
     {
         // Act & Assert
         var exception = Assert.Throws<KeyNotFoundException>(() => BuilderFake.Create("invalid_key").Build());
-        Assert.Contains("Preset 'invalid_key' not found", exception.Message);
+        Assert.Contains("Blueprint 'invalid_key' not found", exception.Message);
     }
 }

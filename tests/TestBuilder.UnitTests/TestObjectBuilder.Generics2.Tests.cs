@@ -14,7 +14,7 @@ public class TestObjectBuilderGenerics2Tests
     private readonly DateTime _defaultDate = new DateTime(2026, 2, 10);
 
     [Fact]
-    public void Build_WithoutPresetKey_ShouldUseFirstPreset()
+    public void Build_WithoutBlueprintKey_ShouldUseFirstBlueprint()
     {
         // Act
         var targetCreated = BuilderFake.Create().Build();
@@ -26,7 +26,7 @@ public class TestObjectBuilderGenerics2Tests
     }
 
     [Fact]
-    public void Build_PassingPresetKey_ShouldUseSpecificPreset()
+    public void Build_PassingBlueprintKey_ShouldUseSpecificBlueprint()
     {
         // Act
         var targetCreated = BuilderFake.Create("default").Build();
@@ -38,7 +38,7 @@ public class TestObjectBuilderGenerics2Tests
     }
 
     [Fact]
-    public void Set_Property_ShouldOverridePresetValue()
+    public void Set_Property_ShouldOverrideBlueprintValue()
     {
         // Arrange
         var builderCreated = BuilderFake.Create();
@@ -56,7 +56,7 @@ public class TestObjectBuilderGenerics2Tests
     }
 
     [Fact]
-    public void Build_MissingPropertyInPreset_WhenRequiredInConstructor_ShouldThrowInvalidOperationException()
+    public void Build_MissingPropertyInBlueprint_WhenRequiredInConstructor_ShouldThrowInvalidOperationException()
     {
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => BuilderFakeMissingTag.Create().Build());
@@ -64,7 +64,7 @@ public class TestObjectBuilderGenerics2Tests
     }
 
     [Fact]
-    public void Build_MissingPropertyInPreset_WhenNotRequiredInConstructor_ShouldKeepInitialValue()
+    public void Build_MissingPropertyInBlueprint_WhenNotRequiredInConstructor_ShouldKeepInitialValue()
     {
         // Act
         var targetCreated = BuilderFakeMissingMetadata.Create().Build();

@@ -12,18 +12,18 @@ public class BuilderFake : TestObjectBuilder<BuilderFake, TargetFake>
     public List<string> Tags { get; set; } = [ "tag1", "tag2" ];
     public Dictionary<string, object> Metadata { get; set; } =
         new Dictionary<string, object> { ["key1"] = "value1" };
-    public byte CustomValueOutsidePreset { get; set; } = 10;
+    public byte CustomValueOutsideBlueprint { get; set; } = 10;
 }
 
 public class BuilderFakeMissingTag : TestObjectBuilder<BuilderFakeMissingTag, TargetFake>
 {
     public Dictionary<string, object> Metadata { get; set; } =
         new Dictionary<string, object> { ["key1"] = "value1" };
-    public byte CustomValueOutsidePreset { get; set; } = 10;
+    public byte CustomValueOutsideBlueprint { get; set; } = 10;
 }
 
 public class BuilderFakeMissingMetadata : TestObjectBuilder<BuilderFakeMissingMetadata, TargetFake>
 {
     public List<string> Tags { get; set; } = [ "tag1", "tag2" ];
-    public byte CustomValueOutsidePreset { get; set; } = 10;
+    public byte CustomValueOutsideBlueprint { get; set; } = 10;
 }

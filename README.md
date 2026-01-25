@@ -16,35 +16,35 @@ First, you need to install the library in your test project as a NuGet package:
 
 ## Creating your Builder class
 
-You must create your builder classes by inheriting from `TestObjectBuilder<TBuilder, TPresets, TTarget>`, where the type arguments are:
+You must create your builder classes by inheriting from `TestObjectBuilder<TBuilder, TBlueprint, TTarget>`, where the type arguments are:
 - **TBuilder**: The builder class itself that you are creating;
-- **TPresets**: A class that will contain the values used to create your final class. These values can vary according to scenarios or be modified during the creation of your builder;
+- **TBlueprint**: A class that will contain the values used to create your final class. These values can vary according to scenarios or be modified during the creation of your builder;
 - **TTarget**: The type of the object you intend to create at the end with your builder object.
 
-When inheriting from `TestObjectBuilder`, you must provide a public parameterless constructor so that the instance can be created internally by the `Create` method. You also need to implement the abstract methods `ConfigurePresets` and `GetInstance`.
+When inheriting from `TestObjectBuilder`, you must provide a public parameterless constructor so that the instance can be created internally by the `Create` method. You also need to implement the abstract methods `ConfigureBlueprints` and `GetInstance`.
 
-In the `ConfigurePresets` method, you will receive a dictionary instance as a parameter, and you must add at least one Preset. A Preset consists of an identifier key and a creation `Func` for your Preset. These presets will be used according to the `presetKey` passed in the `Create` method.
+In the `ConfigureBlueprints` method, you will receive a dictionary instance as a parameter, and you must add at least one Blueprint. A Blueprint consists of an identifier key and a creation `Func` for your Blueprint. These blueprints will be used according to the `blueprintKey` passed in the `Create` method.
 
-In the `GetInstance` method, you will create your final class based on the values of the Preset object received as a parameter.
+In the `GetInstance` method, you will create your final class based on the values of the Blueprint object received as a parameter.
 
 ### Example
 
 ```csharp
-public class SampleBuilder : TestObjectBuilder<SampleBuilder, SamplePreset, SampleTarget>
+public class SampleBuilder : TestObjectBuilder<SampleBuilder, SampleBlueprint, SampleTarget>
 {
-    protected override void ConfigurePresets(IDictionary<string, Func<SamplePreset>> presets)
-        => presets["sample"] = () => new SamplePreset("Sample Name", 30, "Sample Nickname");
+    protected override void ConfigureBlueprints(IDictionary<string, Func<SampleBlueprint>> blueprints)
+        => blueprints["sample"] = () => new SampleBlueprint("Sample Name", 30, "Sample Nickname");
 
-    protected override SampleTarget GetInstance(SamplePreset preset)
+    protected override SampleTarget GetInstance(SampleBlueprint blueprint)
         => new ()
         {
-            Name = preset.Name,
-            Age = preset.Age,
-            Nickname = preset.Nickname
+            Name = blueprint.Name,
+            Age = blueprint.Age,
+            Nickname = blueprint.Nickname
         };
 }
 
-public record SamplePreset(string Name, int Age, string Nickname);
+public record SampleBlueprint(string Name, int Age, string Nickname);
 
 public class SampleTarget
 {
@@ -56,7 +56,7 @@ public class SampleTarget
 
 ### Tip
 
-If you do not want to create a separate class for the Preset, you can use the Builder class itself instead. See an example below:
+If you do not want to create a separate class for the Blueprint, you can use the Builder class itself instead. See an example below:
 
 ```csharp
 public class SampleBuilder : TestObjectBuilder<SampleBuilder, SampleBuilder, SampleTarget>
@@ -74,15 +74,15 @@ public class SampleBuilder : TestObjectBuilder<SampleBuilder, SampleBuilder, Sam
         return this;
     }
 
-    protected override void ConfigurePresets(IDictionary<string, Func<SampleBuilder>> presets)
-        => presets["sample"] = () => SetValues("Sample Name", 30, "SampleNick");
+    protected override void ConfigureBlueprints(IDictionary<string, Func<SampleBuilder>> blueprints)
+        => blueprints["sample"] = () => SetValues("Sample Name", 30, "SampleNick");
 
-    protected override SampleTarget GetInstance(SampleBuilder preset)
+    protected override SampleTarget GetInstance(SampleBuilder blueprint)
         => new ()
         {
-            Name = preset.Name,
-            Age = preset.Age,
-            Nickname = preset.Nickname
+            Name = blueprint.Name,
+            Age = blueprint.Age,
+            Nickname = blueprint.Nickname
         };
 }
 
@@ -96,7 +96,7 @@ public class SampleTarget
 
 ## Using the Builder in your code
 
-Using the Builder class is very simple, utilizing a fluent language via 3 methods: `Create`, to create the builder object passing the desired Preset; `Set`, to change values in your preset using lambda expressions; and `Build` to construct your final object.
+Using the Builder class is very simple, utilizing a fluent language via 3 methods: `Create`, to create the builder object passing the desired Blueprint; `Set`, to change values in your blueprint using lambda expressions; and `Build` to construct your final object.
 
 ### Example
 

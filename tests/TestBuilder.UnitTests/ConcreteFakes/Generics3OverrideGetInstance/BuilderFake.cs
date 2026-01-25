@@ -7,24 +7,24 @@
 
 namespace TestBuilder.UnitTests.ConcreteFakes.Generics3OverrideGetInstance;
 
-public class BuilderFake : TestObjectBuilder<BuilderFake, PresetFake, TargetFake>
+public class BuilderFake : TestObjectBuilder<BuilderFake, BlueprintFake, TargetFake>
 {
-    protected override void ConfigurePresets(IDictionary<string, Func<PresetFake>> presets)
+    protected override void ConfigureBlueprints(IDictionary<string, Func<BlueprintFake>> blueprints)
     {
-        presets["default"] = () => new PresetFake(
+        blueprints["default"] = () => new BlueprintFake(
             Tags: [ "tag1", "tag2" ],
             Metadata: new Dictionary<string, object> { ["key1"] = "value1" }
         );
-        presets["alternative"] = () => new PresetFake(
+        blueprints["alternative"] = () => new BlueprintFake(
             Tags: [ "altTag1", "altTag2" ],
             Metadata: new Dictionary<string, object> { ["altKey1"] = "altValue1" }
         );
     }
 
-    protected override TargetFake GetInstance(PresetFake preset)
+    protected override TargetFake GetInstance(BlueprintFake blueprint)
         => new ()
         {
-            Tags = preset.Tags,
-            Metadata = preset.Metadata,
+            Tags = blueprint.Tags,
+            Metadata = blueprint.Metadata,
         };
 }
