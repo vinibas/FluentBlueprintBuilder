@@ -5,9 +5,9 @@
  * See the LICENSE file in the project root for full details.
 */
 
-namespace ViniBas.FluentBlueprintBuilder.UnitTests.ConcreteFakes.Generics2OriginalGetInstance;
+namespace ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics2OriginalGetInstance;
 
-public class TargetFake
+public sealed class TargetFake
 {
     // Field public to verify assignment via constructor, without setter to avoid property assignment
     public List<string> Tags = [ "InitialTag1", "InitialTag2" ];

@@ -5,6 +5,10 @@
  * See the LICENSE file in the project root for full details.
 */
 
-namespace ViniBas.FluentBlueprintBuilder.UnitTests.ConcreteFakes.Generics3OverrideGetInstance;
+namespace ViniBas.FluentBlueprintBuilder.UnitTests.TargetReflectionFactoryTestsConcreteFakes;
 
-public record BlueprintFake(List<string> Tags, Dictionary<string, object> Metadata);
+public sealed class DefaultConstructorBlueprint
+{
+    public string Name { get; set; } = string.Empty;
+    public int Age { get; set; }
+}

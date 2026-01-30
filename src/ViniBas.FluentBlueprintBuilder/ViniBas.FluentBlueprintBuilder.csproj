@@ -24,4 +24,8 @@
         <RepositoryUrl>https://github.com/vinibas/FluentBlueprintBuilder</RepositoryUrl>
         <PackageTags>FluentBlueprintBuilder;Fluent Builder;Blueprint Builder;Test Builder;Fake test;ViniBas</PackageTags>
     </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="$(AssemblyName).UnitTests" />
+    </ItemGroup>
 </Project>

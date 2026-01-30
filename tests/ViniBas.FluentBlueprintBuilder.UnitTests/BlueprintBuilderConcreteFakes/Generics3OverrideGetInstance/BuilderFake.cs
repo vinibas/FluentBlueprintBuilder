@@ -5,7 +5,7 @@
  * See the LICENSE file in the project root for full details.
 */
 
-namespace ViniBas.FluentBlueprintBuilder.UnitTests.ConcreteFakes.Generics3OverrideGetInstance;
+namespace ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics3OverrideGetInstance;
 
 public class BuilderFake : BlueprintBuilder<BuilderFake, BlueprintFake, TargetFake>
 {

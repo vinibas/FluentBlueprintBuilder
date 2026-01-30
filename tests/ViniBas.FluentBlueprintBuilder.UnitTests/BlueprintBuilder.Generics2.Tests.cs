@@ -5,11 +5,11 @@
  * See the LICENSE file in the project root for full details.
 */
 
-using ViniBas.FluentBlueprintBuilder.UnitTests.ConcreteFakes.Generics2OriginalGetInstance;
+using ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics2OriginalGetInstance;
 
 namespace ViniBas.FluentBlueprintBuilder.UnitTests;
 
-public class BlueprintBuilderGenerics2Tests
+public sealed class BlueprintBuilderGenerics2Tests
 {
     private readonly DateTime _defaultDate = new DateTime(2026, 2, 10);
 

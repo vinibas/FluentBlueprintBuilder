@@ -5,11 +5,11 @@
  * See the LICENSE file in the project root for full details.
 */
 
-using ViniBas.FluentBlueprintBuilder.UnitTests.ConcreteFakes.Generics3OverrideGetInstance;
+using ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics3OverrideGetInstance;
 
 namespace ViniBas.FluentBlueprintBuilder.UnitTests;
 
-public class BlueprintBuilderGenerics3Tests
+public sealed class BlueprintBuilderGenerics3Tests
 {
     [Fact]
     public void Build_WithoutBlueprintKey_ShouldUseFirstBlueprint()

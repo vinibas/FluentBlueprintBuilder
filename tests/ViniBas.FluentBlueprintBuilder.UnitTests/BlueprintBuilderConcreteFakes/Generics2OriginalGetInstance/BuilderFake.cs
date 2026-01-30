@@ -5,9 +5,9 @@
  * See the LICENSE file in the project root for full details.
 */
 
-namespace ViniBas.FluentBlueprintBuilder.UnitTests.ConcreteFakes.Generics2OriginalGetInstance;
+namespace ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics2OriginalGetInstance;
 
-public class BuilderFake : BlueprintBuilder<BuilderFake, TargetFake>
+public sealed class BuilderFake : BlueprintBuilder<BuilderFake, TargetFake>
 {
     public List<string> Tags { get; set; } = [ "tag1", "tag2" ];
     public Dictionary<string, object> Metadata { get; set; } =
@@ -15,14 +15,14 @@ public class BuilderFake : BlueprintBuilder<BuilderFake, TargetFake>
     public byte CustomValueOutsideBlueprint { get; set; } = 10;
 }
 
-public class BuilderFakeMissingTag : BlueprintBuilder<BuilderFakeMissingTag, TargetFake>
+public sealed class BuilderFakeMissingTag : BlueprintBuilder<BuilderFakeMissingTag, TargetFake>
 {
     public Dictionary<string, object> Metadata { get; set; } =
         new Dictionary<string, object> { ["key1"] = "value1" };
     public byte CustomValueOutsideBlueprint { get; set; } = 10;
 }
 
-public class BuilderFakeMissingMetadata : BlueprintBuilder<BuilderFakeMissingMetadata, TargetFake>
+public sealed class BuilderFakeMissingMetadata : BlueprintBuilder<BuilderFakeMissingMetadata, TargetFake>
 {
     public List<string> Tags { get; set; } = [ "tag1", "tag2" ];
     public byte CustomValueOutsideBlueprint { get; set; } = 10;
