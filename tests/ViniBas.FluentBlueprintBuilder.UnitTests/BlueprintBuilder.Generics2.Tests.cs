@@ -20,8 +20,8 @@ public sealed class BlueprintBuilderGenerics2Tests
         var targetCreated = BuilderFake.Create().Build();
 
         // Assert
-        Assert.Equal(["tag1", "tag2"], targetCreated.Tags);
-        Assert.Equal(new Dictionary<string, object> { ["key1"] = "value1" }, targetCreated.Metadata);
+        Assert.Equal("SomeName", targetCreated.Name);
+        Assert.Equal("SomeMetadata", targetCreated.Metadata.ToString());
         Assert.Equal(_defaultDate, targetCreated.SomeDate);
     }
 
@@ -32,8 +32,8 @@ public sealed class BlueprintBuilderGenerics2Tests
         var targetCreated = BuilderFake.Create("default").Build();
 
         // Assert
-        Assert.Equal(["tag1", "tag2"], targetCreated.Tags);
-        Assert.Equal(new Dictionary<string, object> { ["key1"] = "value1" }, targetCreated.Metadata);
+        Assert.Equal("SomeName", targetCreated.Name);
+        Assert.Equal("SomeMetadata", targetCreated.Metadata.ToString());
         Assert.Equal(_defaultDate, targetCreated.SomeDate);
     }
 
@@ -42,16 +42,16 @@ public sealed class BlueprintBuilderGenerics2Tests
     {
         // Arrange
         var builderCreated = BuilderFake.Create();
-        var newTagValue = new List<string> { "customTag1", "customTag2" };
+        var newNameValue = "CustomName";
 
         // Act
         var targetCreated = builderCreated
-            .Set(b => b.Tags, newTagValue)
+            .Set(b => b.Name, newNameValue)
             .Build();
 
         // Assert
-        Assert.Equal(newTagValue, targetCreated.Tags);
-        Assert.Equal(new Dictionary<string, object> { ["key1"] = "value1" }, targetCreated.Metadata);
+        Assert.Equal(newNameValue, targetCreated.Name);
+        Assert.Equal("SomeMetadata", targetCreated.Metadata.ToString());
         Assert.Equal(_defaultDate, targetCreated.SomeDate);
     }
 
@@ -59,7 +59,7 @@ public sealed class BlueprintBuilderGenerics2Tests
     public void Build_MissingPropertyInBlueprint_WhenRequiredInConstructor_ShouldThrowInvalidOperationException()
     {
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => BuilderFakeMissingTag.Create().Build());
+        var exception = Assert.Throws<InvalidOperationException>(() => BuilderFakeMissingName.Create().Build());
         Assert.Contains("No suitable constructor found", exception.Message);
     }
 
@@ -70,8 +70,8 @@ public sealed class BlueprintBuilderGenerics2Tests
         var targetCreated = BuilderFakeMissingMetadata.Create().Build();
 
         // Assert
-        Assert.Equal(["tag1", "tag2"], targetCreated.Tags);
-        Assert.Equal(new Dictionary<string, object> { ["Initialkey"] = "Initial value" }, targetCreated.Metadata);
+        Assert.Equal("SomeName", targetCreated.Name);
+        Assert.Equal("InitialMetadata", targetCreated.Metadata.ToString());
         Assert.Equal(_defaultDate, targetCreated.SomeDate);
     }
 }

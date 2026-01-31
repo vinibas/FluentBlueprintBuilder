@@ -55,6 +55,8 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
 
     protected string? BlueprintKey { get; private set; }
 
+    private ITargetReflectionFactory<TTarget> _targetFactoryInstance = new TargetReflectionFactory<TTarget>();
+
     /// <summary>
     /// Creates a new instance of the builder object, which can be used to configure and build the target object.
     /// </summary>
@@ -122,5 +124,5 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
     protected virtual TTarget GetInstance(TBlueprint blueprint)
         => blueprint is null ?
             default! :
-            new TargetReflectionFactory<TTarget>().InstantiateFromBlueprint(blueprint);
+            _targetFactoryInstance.InstantiateFromBlueprint(blueprint);
 }

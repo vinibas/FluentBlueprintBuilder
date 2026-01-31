@@ -9,7 +9,12 @@ using System.Reflection;
 
 namespace ViniBas.FluentBlueprintBuilder;
 
-internal sealed class TargetReflectionFactory<TTarget>
+internal interface ITargetReflectionFactory<TTarget>
+{
+    TTarget InstantiateFromBlueprint<TBlueprint>(TBlueprint blueprint);
+}
+
+internal sealed class TargetReflectionFactory<TTarget> : ITargetReflectionFactory<TTarget>
 {
     private Dictionary<string, object?> _blueprintPropsNameValues = [];
 
@@ -40,7 +45,7 @@ internal sealed class TargetReflectionFactory<TTarget>
         var targetCtors = ListConstructorsFromType<TTarget>();
         var ctorWithItsParameters = targetCtors.Select<ConstructorInfo, (ConstructorInfo ctor, ParameterInfo[] parameters)>(c => (c, c.GetParameters()));
 
-        foreach (var (ctor, parameters) in ctorWithItsParameters.OrderByDescending(c => c.parameters.Length) )
+        foreach (var (ctor, parameters) in ctorWithItsParameters.OrderByDescending(c => c.parameters.Length))
         {
             selectedCtorParams = parameters;
             if (parameters.All(p => IsParameterCompatible(p)))

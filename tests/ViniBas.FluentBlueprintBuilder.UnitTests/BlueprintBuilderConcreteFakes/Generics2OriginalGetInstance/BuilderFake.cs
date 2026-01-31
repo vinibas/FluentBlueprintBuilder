@@ -5,25 +5,25 @@
  * See the LICENSE file in the project root for full details.
 */
 
+using System.Text;
+
 namespace ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics2OriginalGetInstance;
 
 public sealed class BuilderFake : BlueprintBuilder<BuilderFake, TargetFake>
 {
-    public List<string> Tags { get; set; } = [ "tag1", "tag2" ];
-    public Dictionary<string, object> Metadata { get; set; } =
-        new Dictionary<string, object> { ["key1"] = "value1" };
+    public string Name { get; set; } = "SomeName";
+    public StringBuilder Metadata { get; set; } = new("SomeMetadata");
     public byte CustomValueOutsideBlueprint { get; set; } = 10;
 }
 
-public sealed class BuilderFakeMissingTag : BlueprintBuilder<BuilderFakeMissingTag, TargetFake>
+public sealed class BuilderFakeMissingName : BlueprintBuilder<BuilderFakeMissingName, TargetFake>
 {
-    public Dictionary<string, object> Metadata { get; set; } =
-        new Dictionary<string, object> { ["key1"] = "value1" };
+    public StringBuilder Metadata { get; set; } = new("SomeMetadata");
     public byte CustomValueOutsideBlueprint { get; set; } = 10;
 }
 
 public sealed class BuilderFakeMissingMetadata : BlueprintBuilder<BuilderFakeMissingMetadata, TargetFake>
 {
-    public List<string> Tags { get; set; } = [ "tag1", "tag2" ];
+    public string Name { get; set; } = "SomeName";
     public byte CustomValueOutsideBlueprint { get; set; } = 10;
 }

@@ -5,6 +5,8 @@
  * See the LICENSE file in the project root for full details.
 */
 
+using System.Text;
+
 namespace ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics3OverrideGetInstance;
 
-public record BlueprintFake(List<string> Tags, Dictionary<string, object> Metadata);
+public record BlueprintFake(string Name, StringBuilder Metadata);

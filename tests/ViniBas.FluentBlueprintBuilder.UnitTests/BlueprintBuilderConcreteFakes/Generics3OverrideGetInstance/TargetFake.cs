@@ -5,10 +5,12 @@
  * See the LICENSE file in the project root for full details.
 */
 
+using System.Text;
+
 namespace ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics3OverrideGetInstance;
 
 public class TargetFake
 {
-    public List<string> Tags { get; set; } = new();
-    public Dictionary<string, object> Metadata { get; set; } = new();
+    public string Name { get; set; } = string.Empty;
+    public StringBuilder Metadata { get; set; } = new("InitialMetadata");
 }

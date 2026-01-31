@@ -5,26 +5,25 @@
  * See the LICENSE file in the project root for full details.
 */
 
+using System.Text;
+
 namespace ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics3OverrideGetInstance;
 
-public class BuilderFake : BlueprintBuilder<BuilderFake, BlueprintFake, TargetFake>
+public class BuilderFakeNoOverridingGetInstance : BlueprintBuilder<BuilderFakeNoOverridingGetInstance, BlueprintFake, TargetFake>
 {
     protected override void ConfigureBlueprints(IDictionary<string, Func<BlueprintFake>> blueprints)
     {
-        blueprints["default"] = () => new BlueprintFake(
-            Tags: [ "tag1", "tag2" ],
-            Metadata: new Dictionary<string, object> { ["key1"] = "value1" }
-        );
-        blueprints["alternative"] = () => new BlueprintFake(
-            Tags: [ "altTag1", "altTag2" ],
-            Metadata: new Dictionary<string, object> { ["altKey1"] = "altValue1" }
-        );
+        blueprints["default"] = () => new BlueprintFake("SomeName", new StringBuilder("SomeMetadata"));
+        blueprints["alternative"] = () => new BlueprintFake("AlternativeName", new StringBuilder("AlternativeMetadata"));
     }
+}
 
+public class BuilderFakeOverridingGetInstance : BuilderFakeNoOverridingGetInstance
+{
     protected override TargetFake GetInstance(BlueprintFake blueprint)
         => new ()
         {
-            Tags = blueprint.Tags,
+            Name = blueprint.Name,
             Metadata = blueprint.Metadata,
         };
 }

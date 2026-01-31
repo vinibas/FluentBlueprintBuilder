@@ -5,6 +5,8 @@
  * See the LICENSE file in the project root for full details.
 */
 
+using System.Text;
+using Moq;
 using ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics3OverrideGetInstance;
 
 namespace ViniBas.FluentBlueprintBuilder.UnitTests;
@@ -15,46 +17,73 @@ public sealed class BlueprintBuilderGenerics3Tests
     public void Build_WithoutBlueprintKey_ShouldUseFirstBlueprint()
     {
         // Act
-        var targetCreated = BuilderFake.Create().Build();
+        var targetCreated = BuilderFakeOverridingGetInstance.Create().Build();
 
         // Assert
-        Assert.Equal(new List<string> { "tag1", "tag2" }, targetCreated.Tags);
-        Assert.Equal(new Dictionary<string, object> { ["key1"] = "value1" }, targetCreated.Metadata);
+        Assert.Equal("SomeName", targetCreated.Name);
+        Assert.Equal("SomeMetadata", targetCreated.Metadata.ToString());
     }
 
     [Fact]
     public void Build_PassingBlueprintKey_ShouldUseSpecificBlueprint()
     {
         // Act
-        var targetCreated = BuilderFake.Create("alternative").Build();
+        var targetCreated = BuilderFakeOverridingGetInstance.Create("alternative").Build();
 
         // Assert
-        Assert.Equal(new List<string> { "altTag1", "altTag2" }, targetCreated.Tags);
-        Assert.Equal(new Dictionary<string, object> { ["altKey1"] = "altValue1" }, targetCreated.Metadata);
+        Assert.Equal("AlternativeName", targetCreated.Name);
+        Assert.Equal("AlternativeMetadata", targetCreated.Metadata.ToString());
     }
 
     [Fact]
     public void Set_Property_ShouldOverrideBlueprintValue()
     {
         // Arrange
-        var builderCreated = BuilderFake.Create();
-        var newTagValue = new List<string> { "customTag1", "customTag2" };
+        var builderCreated = BuilderFakeOverridingGetInstance.Create();
+        var newNameValue = "CustomName";
 
         // Act
         var targetCreated = builderCreated
-            .Set(b => b.Tags, newTagValue)
+            .Set(b => b.Name, newNameValue)
             .Build();
 
         // Assert
-        Assert.Equal(newTagValue, targetCreated.Tags);
-        Assert.Equal(new Dictionary<string, object> { ["key1"] = "value1" }, targetCreated.Metadata);
+        Assert.Equal(newNameValue, targetCreated.Name);
+        Assert.Equal("SomeMetadata", targetCreated.Metadata.ToString());
     }
 
     [Fact]
     public void Build_WithInvalidBlueprintKey_ShouldThrowKeyNotFoundException()
     {
         // Act & Assert
-        var exception = Assert.Throws<KeyNotFoundException>(() => BuilderFake.Create("invalid_key").Build());
+        var exception = Assert.Throws<KeyNotFoundException>(() => BuilderFakeOverridingGetInstance.Create("invalid_key").Build());
         Assert.Contains("Blueprint 'invalid_key' not found", exception.Message);
+    }
+
+    [Fact]
+    public void Build_WhenGetInstanceIsNotOverridden_ShouldUseBaseImplementation()
+    {
+        // Arrange
+        var targetCreated = BuilderFakeNoOverridingGetInstance.Create();
+        var expectedTarget = new TargetFake
+        {
+            Name = "SomeName",
+            Metadata = new StringBuilder("SomeMetadata"),
+        };
+
+        var factoryInstanceMock = new Mock<ITargetReflectionFactory<TargetFake>>();
+        factoryInstanceMock.Setup(f => f.InstantiateFromBlueprint(It.IsAny<BlueprintFake>()))
+            .Returns(expectedTarget);
+
+        typeof(BlueprintBuilder<BuilderFakeNoOverridingGetInstance, BlueprintFake, TargetFake>)
+            .GetField("_targetFactoryInstance", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .SetValue(targetCreated, factoryInstanceMock.Object);
+
+        // Act
+        var targetCreatedResult = targetCreated.Build();
+
+        // Assert
+        Assert.Same(expectedTarget, targetCreatedResult);
+        factoryInstanceMock.Verify(f => f.InstantiateFromBlueprint(It.IsAny<BlueprintFake>()), Times.Once);
     }
 }
