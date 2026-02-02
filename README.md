@@ -6,7 +6,7 @@ See the `LICENSE.txt` file for details.
 
 # Introduction
 
-ViniBas.FluentBlueprintBuilder is a library that provides an abstract class to assist in easily building fake objects using a fluent syntax. It supports creating pre-configured states (blueprints), as well as overriding individual values at usage time.
+ViniBas.FluentBlueprintBuilder is a library that provides an abstract class to assist in easily building objects using a fluent syntax. It supports creating pre-configured states (blueprints), as well as overriding individual values at usage time.
 
 Builders created with this library can be used in various scenarios:
 - **Unit tests**: generating fake objects with valid/invalid data scenarios
