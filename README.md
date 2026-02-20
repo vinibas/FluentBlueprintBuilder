@@ -41,7 +41,7 @@ Expected generic type arguments:
 
 Your builder class that inherits from `BlueprintBuilder<>` must provide a **public parameterless constructor** so the instance can be created internally by the `Create` method.
 
-There are two methods you may override: `ConfigureBlueprints` and `GetInstance`.
+There are three methods you may override: `ConfigureBlueprints`, `ConfigureDefaultValues`, and `GetInstance`.
 
 ### `ConfigureBlueprints`
 
@@ -55,6 +55,16 @@ These blueprints will be selected based on the `blueprintKey` passed to `Create`
 Overriding this method is:
 - **Required** for `BlueprintBuilder<TBuilder, TBlueprint, TTarget>`
 - **Optional** for `BlueprintBuilder<TBuilder, TTarget>` (its default implementation adds a `"default"` blueprint returning the current `TBuilder` instance)
+
+### `ConfigureDefaultValues`
+
+`ConfigureDefaultValues` allows you to define the baseline state for your blueprint properties. This method is called automatically during builder initialization.
+
+Inside this method, you can use the `Set` method to assign default values. This is the ideal place to integrate data generation libraries like **Bogus** to ensure every built object has valid, unique data.
+
+Values defined here:
+- Are applied after the blueprint is instantiated.
+- Can be overridden by specific `Set` calls in the fluent chain.
 
 ### `GetInstance`
 
@@ -87,9 +97,21 @@ public class User
 
 ```csharp
 using ViniBas.FluentBlueprintBuilder;
+using Bogus; // Example library for data generation
 
 public class UserBuilder : BlueprintBuilder<UserBuilder, UserBlueprint, User>
 {
+    protected override void ConfigureDefaultValues()
+    {
+        var faker = new Faker();
+
+        // Dynamic default values (generated per build)
+        Set(x => x.Name, _ => faker.Name.FullName());
+        Set(x => x.Age, _ => faker.Random.Int(18, 80));
+        // Dependent value: Email depends on the generated Name
+        Set(x => x.Email, bp => faker.Internet.Email(bp.Name));
+    }
+
     protected override void ConfigureBlueprints(IDictionary<string, Func<UserBlueprint>> blueprints)
     {
         blueprints["default"] = () => new UserBlueprint("John Doe", 30, "john@example.com");
@@ -139,17 +161,21 @@ public class UserBuilder : BlueprintBuilder<UserBuilder, User>
 
 ## Using the Builder in your code
 
-The fluent API uses three methods:
+The fluent API uses the following methods:
 
 - `Create` to create a builder instance, optionally specifying a blueprint key. If the key is omitted, the first blueprint object in the dictionary will be used.
-- `Set` (optional) to override blueprint values using lambda expressions.
-- `Build` to construct the final target object.
+- `Set` (optional) to override blueprint values. It supports:
+  - **Static values**: `.Set(p => p.Age, 25)`
+  - **Dynamic generators**: `.Set(p => p.Id, _ => Guid.NewGuid())` (useful for unique values per build)
+- `Build` to construct the final target object. It accepts an optional `blueprintKey` or an `index` to select the desired blueprint.
+- `BuildMany` to construct a sequence of target objects.
 
 ### Example
 
 ```csharp
-var user = UserBuilder.Create("default")
+var user = UserBuilder.Create()
     .Set(p => p.Name, "Changed Name")
-    .Set(p => p.Email, "changed@example.com")
-    .Build();
+    // Dynamic value depending on the current state of the blueprint
+    .Set(p => p.Email, bp => $"changed.{bp.Name.Replace(" ", ".")}@example.com")
+    .Build("my-blueprint-key");
 ```

@@ -28,48 +28,50 @@ namespace ViniBas.FluentBlueprintBuilder;
 public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
     where TBuilder : BlueprintBuilder<TBuilder, TBlueprint, TTarget>, new()
 {
-    private readonly IDictionary<string, Func<TBlueprint>> _blueprints =
-        new Dictionary<string, Func<TBlueprint>>(StringComparer.OrdinalIgnoreCase);
+    private readonly OrderedDictionary<string, Func<TBlueprint>> _blueprints = new (StringComparer.OrdinalIgnoreCase);
 
-    private TBlueprint _selectedBlueprint = default!;
-    private TBlueprint SelectedBlueprint
-    {
-        get
-        {
-            if (_selectedBlueprint is not null)
-                return _selectedBlueprint;
+    private readonly ICollection<Action<TBlueprint>> _actionSetters = new List<Action<TBlueprint>>();
 
-            if (_blueprints.Count == 0)
-                throw new InvalidOperationException("No variants defined for this builder.");
-
-            if (BlueprintKey is not null && !_blueprints.ContainsKey(BlueprintKey))
-                throw new KeyNotFoundException($"Blueprint '{BlueprintKey}' not found. Available blueprints: {string.Join(", ", _blueprints.Keys)}");
-
-            _selectedBlueprint = BlueprintKey is not null ?
-                _blueprints[BlueprintKey].Invoke() :
-                _blueprints.First().Value.Invoke();
-
-            return _selectedBlueprint;
-        }
-    }
-
-    protected string? BlueprintKey { get; private set; }
+    protected string? DefaultBlueprintKey { get; private set; }
 
     private ITargetReflectionFactory<TTarget> _targetFactoryInstance = new TargetReflectionFactory<TTarget>();
 
     /// <summary>
     /// Creates a new instance of the builder object, which can be used to configure and build the target object.
     /// </summary>
-    /// <param name="blueprintKey">Defines the blueprint key to use for building the target object.
+    /// <param name="defaultBlueprintKey">Defines the blueprint key to use for building the target object.
     /// If null, the first blueprint declared in the list will be used.
-    /// blueprintKey is case-insensitive.</param>
-    /// <returns></returns>
-    public static TBuilder Create(string? blueprintKey = null)
+    /// The key is case-insensitive.</param>
+    /// <returns>A new builder instance.</returns>
+    public static TBuilder Create(string? defaultBlueprintKey = null)
+        => new TBuilder { DefaultBlueprintKey = defaultBlueprintKey };
+
+    protected BlueprintBuilder()
+        => ConfigureBuilder((TBuilder)this);
+
+    /// <summary>
+    /// Configures the builder instance by registering blueprints and applying default values.
+    /// </summary>
+    /// <param name="builder">The builder instance to configure.</param>
+    private static void ConfigureBuilder(TBuilder builder)
     {
-        var builder = new TBuilder { BlueprintKey = blueprintKey };
         builder.ConfigureBlueprints(builder._blueprints);
-        return builder;
+        builder.ConfigureDefaultValues();
     }
+
+    /// <summary>
+    /// Configures the default values for the blueprint properties.
+    /// <para>
+    /// This method is called automatically during the builder initialization.
+    /// Override this method to use <see cref="Set{TValue}(Expression{Func{TBlueprint, TValue}}, TValue)"/>
+    /// (or its overloads) to establish a baseline state for your data (e.g., generating random IDs, setting default flags).
+    /// </para>
+    /// <para>
+    /// These values are applied after the blueprint is instantiated but can be overridden by subsequent
+    /// <c>Set</c> calls in the fluent chain.
+    /// </para>
+    /// </summary>
+    protected virtual void ConfigureDefaultValues() { }
 
     /// <summary>
     /// Configures the blueprints available for this builder.
@@ -78,28 +80,155 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
     protected abstract void ConfigureBlueprints(IDictionary<string, Func<TBlueprint>> blueprints);
 
     /// <summary>
-    /// Changes the value of a property in the builder.
+    /// Overrides the value of a property in the blueprint with a static value.
+    /// This override is applied before the target is built.
     /// </summary>
-    /// <param name="propertyExpression">Property expression to identify the property to set.</param>
-    /// <param name="value">New value to assign to the property.</param>
-    /// <returns>The builder instance for fluent configuration.</returns>
+    /// <typeparam name="TValue">The type of the property.</typeparam>
+    /// <param name="propertyExpression">A lambda expression identifying the property to set (e.g., <c>x => x.PropertyName</c>).</param>
+    /// <param name="value">The new value to assign to the property.</param>
+    /// <returns>The builder instance for fluent chaining.</returns>
     public TBuilder Set<TValue>(Expression<Func<TBlueprint, TValue>> propertyExpression, TValue value)
     {
-        var memberExpression = propertyExpression.Body as MemberExpression
+        var propertyInfo = GetPropertyInfoFromExpression(propertyExpression);
+        var convertedValue = ConvertValue(value, propertyInfo.PropertyType);
+
+        _actionSetters.Add(selectedBlueprint => propertyInfo.SetValue(selectedBlueprint, convertedValue));
+
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Overrides the value of a property in the blueprint using a value generator function.
+    /// The function receives the current blueprint instance, allowing values to depend on other properties.
+    /// This override is applied before the target is built.
+    /// </summary>
+    /// <typeparam name="TValue">The type of the property.</typeparam>
+    /// <param name="propertyExpression">A lambda expression identifying the property to set (e.g., <c>x => x.PropertyName</c>).</param>
+    /// <param name="valueFactory">A function that generates the value. It receives the blueprint instance as a parameter.</param>
+    /// <returns>The builder instance for fluent chaining.</returns>
+    public TBuilder Set<TValue>(Expression<Func<TBlueprint, TValue>> propertyExpression, Func<TBlueprint, TValue> valueFactory)
+    {
+        var propertyInfo = GetPropertyInfoFromExpression(propertyExpression);
+        _actionSetters.Add(selectedBlueprint =>
+        {
+            var value = valueFactory(selectedBlueprint);
+            var convertedValue = ConvertValue(value, propertyInfo.PropertyType);
+            propertyInfo.SetValue(selectedBlueprint, convertedValue);
+        });
+        return (TBuilder)this;
+    }
+
+    private static PropertyInfo GetPropertyInfoFromExpression<TValue>(Expression<Func<TBlueprint, TValue>> propertyExpression)
+    {
+        var expression = propertyExpression.Body;
+
+        // Handle implicit conversions (e.g. int passed to byte property) which create a UnaryExpression (Convert)
+        if (expression is UnaryExpression unaryExpression && (unaryExpression.NodeType is ExpressionType.Convert or ExpressionType.ConvertChecked))
+            expression = unaryExpression.Operand;
+
+        var memberExpression = expression as MemberExpression
             ?? throw new ArgumentException("Expression must be a property access.", nameof(propertyExpression));
 
         var propertyInfo = memberExpression.Member as PropertyInfo
             ?? throw new ArgumentException("Expression must refer to a property.", nameof(propertyExpression));
 
-        propertyInfo.SetValue(SelectedBlueprint, value);
-        return (TBuilder)this;
+        return propertyInfo;
+    }
+
+    private static object? ConvertValue(object? value, Type targetType)
+    {
+        if (value is null) return null;
+        if (targetType.IsInstanceOfType(value)) return value;
+
+        var underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+        return Convert.ChangeType(value, underlyingType);
+    }
+
+    private void ApplySettedValues(TBlueprint selectedBlueprint)
+    {
+        foreach(var actionSetter in _actionSetters)
+            actionSetter(selectedBlueprint);
     }
 
     /// <summary>
-    /// Builds the target object based on the configured properties and selected blueprint.
+    /// Builds the target object based on the selected blueprint and any configured property overrides.
     /// </summary>
+    /// <param name="blueprintKey">
+    /// The key of the blueprint to use. If null, with index also null, uses the default key provided
+    /// at creation (defaultBlueprintKey). If that is also null, it uses the first registered blueprint.
+    /// </param>
+    /// <param name="index">
+    /// The index of the blueprint to use, based on registration order.
+    /// </param>
     /// <returns>The built target object.</returns>
-    public virtual TTarget Build() => GetInstance(SelectedBlueprint);
+    public virtual TTarget Build(string? blueprintKey = null, uint? index = null)
+    {
+        var selectedBlueprint = CreateSelectedBlueprint(blueprintKey ?? DefaultBlueprintKey, index);
+
+        ApplySettedValues(selectedBlueprint);
+
+        return GetInstance(selectedBlueprint);
+    }
+
+    /// <summary>
+    /// Builds a sequence of target objects, one for each specified blueprint key.
+    /// Each object is built independently, with all configured <c>Set</c> overrides applied to each one.
+    /// This method calls the overridable <see cref="Build(string?, uint?)"/> for each key.
+    /// </summary>
+    /// <param name="blueprintKeys">A sequence of blueprint keys to build.</param>
+    /// <returns>An <see cref="IEnumerable{TTarget}"/> that yields the built objects.</returns>
+    public virtual IEnumerable<TTarget> BuildMany(params string[] blueprintKeys)
+        => blueprintKeys.Select(k => Build(k));
+
+    /// <summary>
+    /// Builds a sequence of a specified number of target objects.
+    /// The behavior depends on the <paramref name="blueprintKey"/> parameter.
+    /// This method calls the overridable <see cref="Build(string?, uint?)"/> for each item.
+    /// </summary>
+    /// <param name="size">The number of objects to build.
+    /// If null, it defaults to the number of registered blueprints.</param>
+    /// <param name="blueprintKey">
+    /// If a key is provided, all objects will be built using that specific blueprint.
+    /// If null, the method will build objects by iterating through all available blueprints in a circular fashion
+    /// (e.g., for a size of 5 with 3 blueprints, it will use blueprint 0, 1, 2, 0, 1).
+    /// </param>
+    /// <returns>An <see cref="IEnumerable{TTarget}"/> that yields the built objects.</returns>
+    public virtual IEnumerable<TTarget> BuildMany(uint? size, string? blueprintKey = null)
+    {
+        size ??= (uint)_blueprints.Count;
+
+        for (ushort i = 0; i < size; i++)
+        {
+            uint? blueprintIndex = blueprintKey is not null ?
+                null :
+                (uint)(i % _blueprints.Count);
+            yield return Build(blueprintKey, blueprintIndex);
+        }
+    }
+
+    private TBlueprint CreateSelectedBlueprint(string? blueprintKey, uint? index = null)
+    {
+        if (_blueprints.Count == 0)
+            throw new InvalidOperationException("No blueprints defined for this builder.");
+
+        if (blueprintKey is not null)
+        {
+            if (!_blueprints.ContainsKey(blueprintKey))
+                throw new KeyNotFoundException($"Blueprint '{blueprintKey}' not found. Available blueprints: {string.Join(", ", _blueprints.Keys)}");
+
+            if (index is not null && _blueprints.GetAt((int)index).Key != blueprintKey)
+                throw new ArgumentOutOfRangeException("Index out of range.");
+
+            return _blueprints[blueprintKey].Invoke();
+        }
+
+        if (index is not null)
+            return _blueprints.GetAt((int)index).Value.Invoke();
+
+        return DefaultBlueprintKey is not null ?
+            _blueprints[DefaultBlueprintKey].Invoke() :
+            _blueprints.First().Value.Invoke();
+    }
 
     /// <summary>
     /// Gets an instance of the target object based on the provided blueprint.
