@@ -7,7 +7,7 @@
 
 using System.Text;
 using Moq;
-using ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics3OverrideGetInstance;
+using ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics3;
 
 namespace ViniBas.FluentBlueprintBuilder.UnitTests;
 
@@ -25,10 +25,21 @@ public sealed class BlueprintBuilderGenerics3Tests
     }
 
     [Fact]
-    public void Build_PassingBlueprintKey_ShouldUseSpecificBlueprint()
+    public void Build_WithDefaultBlueprintKeySetAtCreate_ShouldUseSpecificBlueprint()
     {
         // Act
         var targetCreated = BuilderFakeOverridingGetInstance.Create("alternative").Build();
+
+        // Assert
+        Assert.Equal("AlternativeName", targetCreated.Name);
+        Assert.Equal("AlternativeMetadata", targetCreated.Metadata.ToString());
+    }
+
+    [Fact]
+    public void Build_PassingBlueprintKeyToMethod_ShouldUseSpecificBlueprint()
+    {
+        // Act
+        var targetCreated = BuilderFakeOverridingGetInstance.Create().Build("alternative");
 
         // Assert
         Assert.Equal("AlternativeName", targetCreated.Name);
@@ -75,9 +86,7 @@ public sealed class BlueprintBuilderGenerics3Tests
         factoryInstanceMock.Setup(f => f.InstantiateFromBlueprint(It.IsAny<BlueprintFake>()))
             .Returns(expectedTarget);
 
-        typeof(BlueprintBuilder<BuilderFakeNoOverridingGetInstance, BlueprintFake, TargetFake>)
-            .GetField("_targetFactoryInstance", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
-            .SetValue(targetCreated, factoryInstanceMock.Object);
+        targetCreated._targetFactoryInstance = factoryInstanceMock.Object;
 
         // Act
         var targetCreatedResult = targetCreated.Build();

@@ -34,7 +34,7 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
 
     protected string? DefaultBlueprintKey { get; private set; }
 
-    private ITargetReflectionFactory<TTarget> _targetFactoryInstance = new TargetReflectionFactory<TTarget>();
+    internal ITargetReflectionFactory<TTarget> _targetFactoryInstance = new TargetReflectionFactory<TTarget>();
 
     /// <summary>
     /// Creates a new instance of the builder object, which can be used to configure and build the target object.

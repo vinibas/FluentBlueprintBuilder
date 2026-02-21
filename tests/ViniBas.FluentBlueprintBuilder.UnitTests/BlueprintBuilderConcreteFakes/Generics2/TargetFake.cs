@@ -7,7 +7,7 @@
 
 using System.Text;
 
-namespace ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics2OriginalGetInstance;
+namespace ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics2;
 
 public sealed class TargetFake
 {
