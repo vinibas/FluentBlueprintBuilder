@@ -230,8 +230,7 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
 
         if (blueprintKey is not null)
         {
-            if (!_blueprints.ContainsKey(blueprintKey))
-                throw new KeyNotFoundException($"Blueprint '{blueprintKey}' not found. Available blueprints: {string.Join(", ", _blueprints.Keys)}");
+            ValidateBlueprintKeyExistence(blueprintKey);
 
             if (index is not null && _blueprints.GetAt((int)index).Key != blueprintKey)
                 throw new ArgumentOutOfRangeException("Index out of range.");
@@ -242,9 +241,20 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
         if (index is not null)
             return _blueprints.GetAt((int)index).Value.Invoke();
 
-        return DefaultBlueprintKey is not null ?
-            _blueprints[DefaultBlueprintKey].Invoke() :
-            _blueprints.First().Value.Invoke();
+        if (DefaultBlueprintKey is not null)
+        {
+            ValidateBlueprintKeyExistence(DefaultBlueprintKey);
+            return _blueprints[DefaultBlueprintKey].Invoke();
+        }
+
+        return _blueprints.First().Value.Invoke();
+
+
+        void ValidateBlueprintKeyExistence(string blueprintKey)
+        {
+            if (!_blueprints.ContainsKey(blueprintKey))
+                throw new KeyNotFoundException($"Blueprint '{blueprintKey}' not found. Available blueprints: {string.Join(", ", _blueprints.Keys)}");
+        }
     }
 
     /// <summary>

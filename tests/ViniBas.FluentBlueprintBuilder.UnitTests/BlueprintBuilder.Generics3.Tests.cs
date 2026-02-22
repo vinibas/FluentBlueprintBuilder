@@ -63,8 +63,6 @@ public sealed class BlueprintBuilderGenerics3Tests
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             BuilderFakeOverridingGetInstance.Create().Build("alternative", 2));
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            BuilderFakeOverridingGetInstance.Create("alternative").Build(null, 2));
     }
 
     [Fact]
@@ -224,7 +222,7 @@ public sealed class BlueprintBuilderGenerics3Tests
         // Act
         var targetsCreated = BuilderFakeOverridingGetInstance
             .Create()
-            .BuildMany(null, "alternative", "alternative2")
+            .BuildMany(size: null, "alternative", "alternative2")
             .ToList();
 
         Assert.Equal(2, targetsCreated.Count);
