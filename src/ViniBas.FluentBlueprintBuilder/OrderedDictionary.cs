@@ -90,6 +90,7 @@ namespace System.Collections.Generic
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public KeyValuePair<TKey, TValue> GetAt(int index) => new(_orderedKeys[index], _dictionary[_orderedKeys[index]]);
+        public int IndexOf(TKey key) => _orderedKeys.IndexOf(key);
     }
 }
 #endif

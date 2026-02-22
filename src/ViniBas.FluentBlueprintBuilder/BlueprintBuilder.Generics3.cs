@@ -96,7 +96,8 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
         var propertyInfo = GetPropertyInfoFromExpression(propertyExpression);
         var convertedValue = ConvertValue(value, propertyInfo.PropertyType);
 
-        _actionSetters.Add(selectedBlueprint => propertyInfo.SetValue(selectedBlueprint, convertedValue));
+        _actionSetters.Add(selectedBlueprint
+            => propertyInfo.SetValue(selectedBlueprint, convertedValue));
 
         return (TBuilder)this;
     }
@@ -148,12 +149,6 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
         return Convert.ChangeType(value, underlyingType);
     }
 
-    private void ApplySettedValues(TBlueprint selectedBlueprint)
-    {
-        foreach(var actionSetter in _actionSetters)
-            actionSetter(selectedBlueprint);
-    }
-
     /// <summary>
     /// Builds the target object based on the selected blueprint and any configured property overrides.
     /// </summary>
@@ -175,6 +170,12 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
         ApplySettedValues(selectedBlueprint);
 
         return GetInstance(selectedBlueprint);
+    }
+
+    private void ApplySettedValues(TBlueprint selectedBlueprint)
+    {
+        foreach(var actionSetter in _actionSetters)
+            actionSetter(selectedBlueprint);
     }
 
     /// <summary>
@@ -232,14 +233,19 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
         {
             ValidateBlueprintKeyExistence(blueprintKey);
 
-            if (index is not null && _blueprints.GetAt((int)index).Key != blueprintKey)
-                throw new ArgumentOutOfRangeException("Index out of range.");
+            if (index is not null && _blueprints.IndexOf(blueprintKey) != (int)index)
+                throw new ArgumentOutOfRangeException(nameof(index), "The provided index does not match the provided blueprint key.");
 
             return _blueprints[blueprintKey].Invoke();
         }
 
         if (index is not null)
+        {
+            if (_blueprints.Count <= index)
+                throw new ArgumentOutOfRangeException(nameof(index), "The provided index is out of range.");
+
             return _blueprints.GetAt((int)index).Value.Invoke();
+        }
 
         if (DefaultBlueprintKey is not null)
         {
@@ -247,7 +253,7 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
             return _blueprints[DefaultBlueprintKey].Invoke();
         }
 
-        return _blueprints.First().Value.Invoke();
+        return _blueprints.GetAt(0).Value.Invoke();
 
 
         void ValidateBlueprintKeyExistence(string blueprintKey)

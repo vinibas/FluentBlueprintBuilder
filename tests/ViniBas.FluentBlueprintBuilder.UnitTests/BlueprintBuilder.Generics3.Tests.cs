@@ -274,4 +274,38 @@ public sealed class BlueprintBuilderGenerics3Tests
         Assert.Equal("SomeMetadata", targetCreated.Metadata.ToString());
         Assert.Equal(5, targetCreated.Counter);
     }
+
+    [Fact]
+    public void Set_WithStaticValue_WhenValueNeedsImplicitConversion_ShouldOverrideBlueprintValue()
+    {
+        // Arrange
+        var builderCreated = BuilderFakeOverridingGetInstance.Create();
+
+        // Act
+        var targetCreated = builderCreated
+            .Set(b => b.Counter, (long)5)
+            .Build();
+
+        // Assert
+        Assert.Equal("SomeName", targetCreated.Name);
+        Assert.Equal("SomeMetadata", targetCreated.Metadata.ToString());
+        Assert.Equal(5, targetCreated.Counter);
+    }
+
+    [Fact]
+    public void Set_WithValueGeneratorFunction_WhenValueNeedsImplicitConversion_ShouldOverrideBlueprintValue()
+    {
+        // Arrange
+        var builderCreated = BuilderFakeOverridingGetInstance.Create();
+
+        // Act
+        var targetCreated = builderCreated
+            .Set(b => b.Counter, _ => (long)5)
+            .Build();
+
+        // Assert
+        Assert.Equal("SomeName", targetCreated.Name);
+        Assert.Equal("SomeMetadata", targetCreated.Metadata.ToString());
+        Assert.Equal(5, targetCreated.Counter);
+    }
 }
