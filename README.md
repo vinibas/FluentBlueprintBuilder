@@ -50,11 +50,11 @@ A blueprint consists of:
 - an identifier key (`string`), and
 - a factory function (`Func<TBlueprint>`) that creates the blueprint instance.
 
-These blueprints will be selected based on the `blueprintKey` passed to `Create`.
+Blueprints are selected when calling `Build`, based on the `blueprintKey` or `index` passed to it (see [Using the Builder](#using-the-builder-in-your-code)).
 
 Overriding this method is:
 - **Required** for `BlueprintBuilder<TBuilder, TBlueprint, TTarget>`
-- **Optional** for `BlueprintBuilder<TBuilder, TTarget>` (its default implementation adds a `"default"` blueprint returning the current `TBuilder` instance)
+- **Optional** for `BlueprintBuilder<TBuilder, TTarget>` (its default implementation adds a `"default"` blueprint returning the current `TBuilder` instance; you can reference this key via the `DefaultBlueprintName` constant)
 
 ### `ConfigureDefaultValues`
 
@@ -143,9 +143,13 @@ public class UserBuilder : BlueprintBuilder<UserBuilder, User>
     public int Age { get; set; } = 30;
     public string Email { get; set; } = "john@example.com";
 
-    // Optional (the default implementation already registers "default" => this):
+    // Optional (the default implementation already registers DefaultBlueprintName => this).
+    // Override only if you need to add more blueprints:
     protected override void ConfigureBlueprints(IDictionary<string, Func<UserBuilder>> blueprints)
-        => blueprints["default"] = () => this;
+    {
+        base.ConfigureBlueprints(blueprints); // registers "default" => this
+        blueprints["admin"] = () => new UserBuilder { Name = "Admin User", Age = 40, Email = "admin@example.com" };
+    }
 
     // Optional:
     protected override User GetInstance(UserBuilder blueprint)
@@ -163,12 +167,15 @@ public class UserBuilder : BlueprintBuilder<UserBuilder, User>
 
 The fluent API uses the following methods:
 
-- `Create` to create a builder instance, optionally specifying a blueprint key. If the key is omitted, the first blueprint object in the dictionary will be used.
+- `Create(defaultBlueprintKey?)` to create a builder instance, optionally specifying a **per-instance default blueprint key**. This key is used as a fallback by `Build` when neither a `blueprintKey` nor an `index` is explicitly passed to it. If none of these are provided, the first registered blueprint is used.
 - `Set` (optional) to override blueprint values. It supports:
   - **Static values**: `.Set(p => p.Age, 25)`
   - **Dynamic generators**: `.Set(p => p.Id, _ => Guid.NewGuid())` (useful for unique values per build)
-- `Build` to construct the final target object. It accepts an optional `blueprintKey` or an `index` to select the desired blueprint.
-- `BuildMany` to construct a sequence of target objects.
+  - **Dependent values**: `.Set(p => p.Email, bp => $"{bp.Name}@example.com")` (value depends on the current blueprint state)
+- `Build(blueprintKey?, index?)` to construct the final target object. You can specify either a `blueprintKey` (case-insensitive string; throws `KeyNotFoundException` if not found) or an `index` (zero-based position based on blueprint registration order) to select the desired blueprint. If both are provided and refer to different blueprints, an `ArgumentOutOfRangeException` is thrown. If neither is provided, falls back to the default key set via `Create`, or to the first registered blueprint.
+- `BuildMany` to construct a sequence of target objects. It has two overloads:
+  - `BuildMany(params string[] blueprintKeys)` — builds one object per provided key, in the given order.
+  - `BuildMany(uint? size, params string[] blueprintKeys)` — builds `size` objects, cycling through the provided keys in order. If no keys are given, it cycles through all registered blueprints in registration order. If `size` is omitted, it defaults to the number of provided keys, or to the total number of registered blueprints if no keys are given.
 
 ### Example
 

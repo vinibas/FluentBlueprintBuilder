@@ -11,10 +11,18 @@ namespace ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes
 
 public class BuilderFakeNoOverridingGetInstance : BlueprintBuilder<BuilderFakeNoOverridingGetInstance, BlueprintFake, TargetFake>
 {
+    private int Index = 0;
+
     protected override void ConfigureBlueprints(IDictionary<string, Func<BlueprintFake>> blueprints)
     {
-        blueprints["default"] = () => new BlueprintFake("SomeName", new StringBuilder("SomeMetadata"));
-        blueprints["alternative"] = () => new BlueprintFake("AlternativeName", new StringBuilder("AlternativeMetadata"));
+        blueprints["default"] = () => new BlueprintFake("default", "SomeName", new StringBuilder("SomeMetadata"), 0);
+        blueprints["alternative"] = () => new BlueprintFake("alternative", "AlternativeName", new StringBuilder("AlternativeMetadata"), 1);
+        blueprints["alternative2"] = () => new BlueprintFake("alternative2", "AlternativeName2", new StringBuilder("AlternativeMetadata2"), 2);
+    }
+
+    protected override void ConfigureDefaultValues()
+    {
+        Set(b => b.Counter, b => b.Counter + Index++);
     }
 }
 
@@ -25,5 +33,18 @@ public class BuilderFakeOverridingGetInstance : BuilderFakeNoOverridingGetInstan
         {
             Name = blueprint.Name,
             Metadata = blueprint.Metadata,
+            Counter = blueprint.Counter,
         };
+}
+
+public class BuilderFakeMissingName : BlueprintBuilder<BuilderFakeMissingName, BlueprintFakeMissingName, TargetFakeWithRequiredConstructor>
+{
+    protected override void ConfigureBlueprints(IDictionary<string, Func<BlueprintFakeMissingName>> blueprints)
+        => blueprints["default"] = () => new BlueprintFakeMissingName(new StringBuilder("SomeMetadata"));
+}
+
+public class BuilderFakeMissingMetadata : BlueprintBuilder<BuilderFakeMissingMetadata, BlueprintFakeMissingMetadata, TargetFakeWithRequiredConstructor>
+{
+    protected override void ConfigureBlueprints(IDictionary<string, Func<BlueprintFakeMissingMetadata>> blueprints)
+        => blueprints["default"] = () => new BlueprintFakeMissingMetadata("SomeName");
 }

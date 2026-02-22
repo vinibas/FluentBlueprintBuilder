@@ -11,6 +11,18 @@ namespace ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes
 
 public class TargetFake
 {
+    public string BlueprintKey { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public StringBuilder Metadata { get; set; } = new("InitialMetadata");
+    public int Counter { get; set; }
+}
+
+public class TargetFakeWithRequiredConstructor
+{
+    // Field public to verify assignment via constructor, without setter to avoid property assignment
+    public string Name;
+    public StringBuilder Metadata { get; set; } = new("InitialMetadata");
+    public DateTime SomeDate { get; set; } = new DateTime(2026, 2, 10);
+
+    public TargetFakeWithRequiredConstructor(string name) => Name = name;
 }

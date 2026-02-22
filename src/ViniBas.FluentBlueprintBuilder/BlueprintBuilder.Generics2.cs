@@ -27,9 +27,11 @@ public abstract class BlueprintBuilder<TBuilder, TTarget>
     : BlueprintBuilder<TBuilder, TBuilder, TTarget>
     where TBuilder : BlueprintBuilder<TBuilder, TTarget>, new()
 {
+    public const string DefaultBlueprintName = "default";
+
     /// <summary>
     /// Registers a factory that returns the current builder instance in the blueprints dictionary with the key "default".
     /// </summary>
     protected override void ConfigureBlueprints(IDictionary<string, Func<TBuilder>> blueprints)
-        => blueprints.Add("default", () => (TBuilder)this);
+        => blueprints.Add(DefaultBlueprintName, () => (TBuilder)this);
 }

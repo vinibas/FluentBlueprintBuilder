@@ -11,67 +11,15 @@ namespace ViniBas.FluentBlueprintBuilder.UnitTests;
 
 public sealed class BlueprintBuilderGenerics2Tests
 {
-    private readonly DateTime _defaultDate = new DateTime(2026, 2, 10);
-
     [Fact]
-    public void Build_WithoutBlueprintKey_ShouldUseFirstBlueprint()
-    {
-        // Act
-        var targetCreated = BuilderFake.Create().Build();
-
-        // Assert
-        Assert.Equal("SomeName", targetCreated.Name);
-        Assert.Equal("SomeMetadata", targetCreated.Metadata.ToString());
-        Assert.Equal(_defaultDate, targetCreated.SomeDate);
-    }
-
-    [Fact]
-    public void Build_PassingBlueprintKey_ShouldUseSpecificBlueprint()
-    {
-        // Act
-        var targetCreated = BuilderFake.Create("default").Build();
-
-        // Assert
-        Assert.Equal("SomeName", targetCreated.Name);
-        Assert.Equal("SomeMetadata", targetCreated.Metadata.ToString());
-        Assert.Equal(_defaultDate, targetCreated.SomeDate);
-    }
-
-    [Fact]
-    public void Set_Property_ShouldOverrideBlueprintValue()
+    public void ConfigureBlueprints_DefaultImplementation_RegistersBuilderInstanceAsDefaultBlueprint()
     {
         // Arrange
-        var builderCreated = BuilderFake.Create();
-        var newNameValue = "CustomName";
-
-        // Act
-        var targetCreated = builderCreated
-            .Set(b => b.Name, newNameValue)
-            .Build();
+        var builder = BuilderFake.Create();
 
         // Assert
-        Assert.Equal(newNameValue, targetCreated.Name);
-        Assert.Equal("SomeMetadata", targetCreated.Metadata.ToString());
-        Assert.Equal(_defaultDate, targetCreated.SomeDate);
-    }
-
-    [Fact]
-    public void Build_MissingPropertyInBlueprint_WhenRequiredInConstructor_ShouldThrowInvalidOperationException()
-    {
-        // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => BuilderFakeMissingName.Create().Build());
-        Assert.Contains("No suitable constructor found", exception.Message);
-    }
-
-    [Fact]
-    public void Build_MissingPropertyInBlueprint_WhenNotRequiredInConstructor_ShouldKeepInitialValue()
-    {
-        // Act
-        var targetCreated = BuilderFakeMissingMetadata.Create().Build();
-
-        // Assert
-        Assert.Equal("SomeName", targetCreated.Name);
-        Assert.Equal("InitialMetadata", targetCreated.Metadata.ToString());
-        Assert.Equal(_defaultDate, targetCreated.SomeDate);
+        Assert.Single(builder.ExposedBlueprints!);
+        Assert.Contains(BlueprintBuilder<BuilderFake, TargetFake>.DefaultBlueprintName, builder.ExposedBlueprints!);
+        Assert.Same(builder, builder.ExposedBlueprints![builder.DefaultBlueprintNameValue].Invoke());
     }
 }

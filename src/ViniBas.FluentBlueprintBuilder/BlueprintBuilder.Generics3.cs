@@ -7,6 +7,7 @@
 
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace ViniBas.FluentBlueprintBuilder;
 
@@ -39,8 +40,8 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
     /// <summary>
     /// Creates a new instance of the builder object, which can be used to configure and build the target object.
     /// </summary>
-    /// <param name="defaultBlueprintKey">Defines the blueprint key to use for building the target object.
-    /// If null, the first blueprint declared in the list will be used.
+    /// <param name="defaultBlueprintKey">Sets the per-instance default blueprint key, used as a fallback by <see cref="Build(string?, uint?)"/>
+    /// when no key or index is explicitly provided. If null, <c>Build</c> will fall back to the first registered blueprint.
     /// The key is case-insensitive.</param>
     /// <returns>A new builder instance.</returns>
     public static TBuilder Create(string? defaultBlueprintKey = null)
@@ -76,7 +77,10 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
     /// <summary>
     /// Configures the blueprints available for this builder.
     /// </summary>
-    /// <param name="blueprints">The dictionary to populate with blueprint key-value pairs. The keys are case-insensitive.</param>
+    /// <param name="blueprints">The dictionary to populate with named blueprint factory functions. Keys are case-insensitive.
+    /// Each value is a <c>Func&lt;TBlueprint&gt;</c> that is invoked each time a blueprint is selected,
+    /// producing a fresh <typeparamref name="TBlueprint"/> instance whose property values will be used
+    /// to construct the target <typeparamref name="TTarget"/> object.</param>
     protected abstract void ConfigureBlueprints(IDictionary<string, Func<TBlueprint>> blueprints);
 
     /// <summary>
@@ -154,16 +158,19 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
     /// Builds the target object based on the selected blueprint and any configured property overrides.
     /// </summary>
     /// <param name="blueprintKey">
-    /// The key of the blueprint to use. If null, with index also null, uses the default key provided
-    /// at creation (defaultBlueprintKey). If that is also null, it uses the first registered blueprint.
+    /// The key of the blueprint to use (case-insensitive).
+    /// If null and <paramref name="index"/> is also null, falls back to the default key set at creation;
+    /// if that is also null, the first registered blueprint is used.
     /// </param>
     /// <param name="index">
-    /// The index of the blueprint to use, based on registration order.
+    /// Zero-based index of the blueprint to use, based on registration order.
     /// </param>
     /// <returns>The built target object.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when <paramref name="blueprintKey"/> is provided but not found.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when both <paramref name="blueprintKey"/> and <paramref name="index"/> are provided but do not refer to the same blueprint.</exception>
     public virtual TTarget Build(string? blueprintKey = null, uint? index = null)
     {
-        var selectedBlueprint = CreateSelectedBlueprint(blueprintKey ?? DefaultBlueprintKey, index);
+        var selectedBlueprint = CreateSelectedBlueprint(blueprintKey, index);
 
         ApplySettedValues(selectedBlueprint);
 
@@ -173,36 +180,46 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
     /// <summary>
     /// Builds a sequence of target objects, one for each specified blueprint key.
     /// Each object is built independently, with all configured <c>Set</c> overrides applied to each one.
-    /// This method calls the overridable <see cref="Build(string?, uint?)"/> for each key.
+    /// Equivalent to calling <see cref="BuildMany(uint?, string[])"/> with <c>size</c> omitted.
+    /// Returns an empty sequence if no keys are provided.
     /// </summary>
     /// <param name="blueprintKeys">A sequence of blueprint keys to build.</param>
-    /// <returns>An <see cref="IEnumerable{TTarget}"/> that yields the built objects.</returns>
+    /// <returns>An <see cref="IEnumerable{TTarget}"/> that yields the built objects, in the same order as the keys.</returns>
     public virtual IEnumerable<TTarget> BuildMany(params string[] blueprintKeys)
-        => blueprintKeys.Select(k => Build(k));
+        => blueprintKeys.Length > 0 ? BuildMany(null, blueprintKeys) : Enumerable.Empty<TTarget>();
 
     /// <summary>
-    /// Builds a sequence of a specified number of target objects.
-    /// The behavior depends on the <paramref name="blueprintKey"/> parameter.
+    /// Builds a sequence of a specified number of target objects, cycling through the provided blueprint keys.
     /// This method calls the overridable <see cref="Build(string?, uint?)"/> for each item.
     /// </summary>
     /// <param name="size">The number of objects to build.
-    /// If null, it defaults to the number of registered blueprints.</param>
-    /// <param name="blueprintKey">
-    /// If a key is provided, all objects will be built using that specific blueprint.
-    /// If null, the method will build objects by iterating through all available blueprints in a circular fashion
+    /// If null, defaults to the number of provided keys (if any), or to the total number of registered blueprints otherwise.</param>
+    /// <param name="blueprintKeys">
+    /// The blueprint keys to cycle through when building the objects.
+    /// If provided, objects are built by cycling through the given keys in order
+    /// (e.g., for a size of 5 with keys "a" and "b", it will use a, b, a, b, a).
+    /// If empty, all registered blueprints are cycled through in registration order
     /// (e.g., for a size of 5 with 3 blueprints, it will use blueprint 0, 1, 2, 0, 1).
     /// </param>
     /// <returns>An <see cref="IEnumerable{TTarget}"/> that yields the built objects.</returns>
-    public virtual IEnumerable<TTarget> BuildMany(uint? size, string? blueprintKey = null)
+    #if NET9_0_OR_GREATER
+    [OverloadResolutionPriority(1)]
+    #endif
+    public virtual IEnumerable<TTarget> BuildMany(uint? size, params string[] blueprintKeys)
     {
-        size ??= (uint)_blueprints.Count;
+        size ??= (uint) (blueprintKeys.Length > 0 ? blueprintKeys.Length : _blueprints.Count);
 
-        for (ushort i = 0; i < size; i++)
+        for (var i = 0; i < size; i++)
         {
-            uint? blueprintIndex = blueprintKey is not null ?
+            var currentBlueprintKey = blueprintKeys.Length > 0 ?
+                blueprintKeys[i % blueprintKeys.Length] :
+                null;
+
+            uint? currentBlueprintIndex = currentBlueprintKey is not null ?
                 null :
                 (uint)(i % _blueprints.Count);
-            yield return Build(blueprintKey, blueprintIndex);
+
+            yield return Build(currentBlueprintKey, currentBlueprintIndex);
         }
     }
 

@@ -9,4 +9,8 @@ using System.Text;
 
 namespace ViniBas.FluentBlueprintBuilder.UnitTests.BlueprintBuilderConcreteFakes.Generics3;
 
-public record BlueprintFake(string Name, StringBuilder Metadata);
+public record BlueprintFake(string BlueprintKey, string Name, StringBuilder Metadata, int Counter);
+
+public record BlueprintFakeMissingName(StringBuilder Metadata);
+
+public record BlueprintFakeMissingMetadata(string Name);
