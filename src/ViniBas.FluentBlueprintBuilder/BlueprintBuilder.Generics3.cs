@@ -287,4 +287,20 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
         => blueprint is null ?
             default! :
             _targetFactoryInstance.InstantiateFromBlueprint(blueprint);
+
+    public virtual TBuilder Clone()
+    {
+        var clone = new TBuilder
+        {
+            DefaultBlueprintKey = DefaultBlueprintKey,
+            _targetFactoryInstance = _targetFactoryInstance,
+        };
+
+        clone._actionSetters.Clear();
+
+        foreach (var setter in _actionSetters)
+            clone._actionSetters.Add(setter);
+
+        return clone;
+    }
 }

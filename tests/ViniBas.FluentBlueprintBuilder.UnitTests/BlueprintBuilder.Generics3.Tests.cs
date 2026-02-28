@@ -308,4 +308,27 @@ public sealed class BlueprintBuilderGenerics3Tests
         Assert.Equal("SomeMetadata", targetCreated.Metadata.ToString());
         Assert.Equal(5, targetCreated.Counter);
     }
+
+    [Fact]
+    public void Clone_ShouldCloneTheBuildWithBlueprintsAndSetActions()
+    {
+        // Arrange
+        var originalBuilder = BuilderFakeOverridingGetInstance.Create("alternative")
+            .Set(b => b.Name, "Original");
+
+        // Act
+        var clonedBuilder = originalBuilder.Clone()
+            .Set(b => b.Metadata, new StringBuilder("Cloned"));
+
+        // Assert
+        var originalTarget = originalBuilder.Build();
+        var clonedTarget = clonedBuilder.Build();
+
+        Assert.Equal("alternative", clonedTarget.BlueprintKey);
+        Assert.Equal("Original", clonedTarget.Name);
+        Assert.Equal("AlternativeMetadata", originalTarget.Metadata.ToString());
+        Assert.Equal("Cloned", clonedTarget.Metadata.ToString());
+        Assert.Equal(1, originalTarget.Counter);
+        Assert.Equal(2, clonedTarget.Counter);
+    }
 }
