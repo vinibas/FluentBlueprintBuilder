@@ -176,6 +176,7 @@ The fluent API uses the following methods:
 - `BuildMany` to construct a sequence of target objects. It has two overloads:
   - `BuildMany(params string[] blueprintKeys)` — builds one object per provided key, in the given order.
   - `BuildMany(uint? size, params string[] blueprintKeys)` — builds `size` objects, cycling through the provided keys in order. If no keys are given, it cycles through all registered blueprints in registration order. If `size` is omitted, it defaults to the number of provided keys, or to the total number of registered blueprints if no keys are given.
+- `Clone()` to create an independent copy of the current builder, inheriting its default blueprint key and all `Set` overrides configured so far. This is useful when the same builder instance (possibly with some `Set` calls already applied) is used in multiple places, but additional `Set` overrides are only relevant in some of them — cloning avoids having those overrides affect other usages.
 
 ### Example
 
@@ -185,4 +186,78 @@ var user = UserBuilder.Create()
     // Dynamic value depending on the current state of the blueprint
     .Set(p => p.Email, bp => $"changed.{bp.Name.Replace(" ", ".")}@example.com")
     .Build("my-blueprint-key");
+```
+
+#### Clone example
+
+```csharp
+// A base builder shared across multiple usages
+var baseBuilder = UserBuilder.Create("admin")
+    .Set(p => p.Name, "Shared Name");
+
+// Extra Set only needed in one specific usage — clone to avoid contaminating baseBuilder
+var specificBuilder = baseBuilder.Clone()
+    .Set(p => p.Email, "specific@example.com");
+
+var sharedUser   = baseBuilder.Build();    // Name = "Shared Name", Email = from blueprint
+var specificUser = specificBuilder.Build(); // Name = "Shared Name", Email = "specific@example.com"
+```
+
+## Testing your Builder
+
+### Dependency injection and mocking
+
+`BlueprintBuilder<>` implements the `IBlueprintBuilder<TTarget>` interface, which exposes `Build` and `BuildMany`. This allows you to declare dependencies on `IBlueprintBuilder<TTarget>` in your classes and substitute them with mocks (e.g., using Moq) in unit tests:
+
+```csharp
+// Production code
+public class OrderService(IBlueprintBuilder<Order> builder)
+{
+    public Order CreateDefaultOrder() => builder.Build();
+}
+
+// Unit test
+var mockBuilder = new Mock<IBlueprintBuilder<Order>>();
+mockBuilder.Setup(b => b.Build(null, null)).Returns(new Order { ... });
+var service = new OrderService(mockBuilder.Object);
+```
+
+### Testing the builder configuration
+
+Two protected members are available inside your builder subclass to support unit tests:
+
+- **`RegisteredBlueprintKeys`** — returns an `IReadOnlyList<string>` with the keys of all registered blueprints in registration order. Useful for asserting that blueprints were configured correctly.
+- **`CreateBlueprint(string blueprintKey)`** — returns the raw blueprint instance produced by the factory registered under the given key, without applying any `Set` overrides or calling `GetInstance`. Useful for testing the blueprint configuration in isolation from target construction.
+
+To access these members from a test without polluting the production builder's public API, create a test-only subclass in your test project that exposes them. Note that `Create()` returns `TBuilder` (the production type), so the helper must be instantiated directly with `new` — the constructor already triggers `ConfigureBlueprints`:
+
+```csharp
+// In the test project only
+public class UserBuilderTestHelper : UserBuilder
+{
+    public new IReadOnlyList<string> RegisteredBlueprintKeys => base.RegisteredBlueprintKeys;
+    public UserBlueprint GetBlueprint(string key) => CreateBlueprint(key);
+}
+```
+
+```csharp
+// Unit tests
+[Fact]
+public void ConfigureBlueprints_ShouldRegisterExpectedBlueprints()
+{
+    var keys = new UserBuilderTestHelper().RegisteredBlueprintKeys;
+
+    Assert.Contains("default", keys);
+    Assert.Contains("admin", keys);
+    Assert.Contains("minor", keys);
+}
+
+[Fact]
+public void Blueprint_Admin_ShouldHaveExpectedValues()
+{
+    var blueprint = new UserBuilderTestHelper().GetBlueprint("admin");
+
+    Assert.Equal("Admin User", blueprint.Name);
+    Assert.Equal(40, blueprint.Age);
+}
 ```

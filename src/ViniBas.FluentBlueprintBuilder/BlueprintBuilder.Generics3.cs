@@ -27,6 +27,7 @@ namespace ViniBas.FluentBlueprintBuilder;
 /// to target properties by name. Override <c>GetInstance</c> to provide custom logic.
 /// </remarks>
 public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
+    : IBlueprintBuilder<TTarget>
     where TBuilder : BlueprintBuilder<TBuilder, TBlueprint, TTarget>, new()
 {
     private readonly OrderedDictionary<string, Func<TBlueprint>> _blueprints = new (StringComparer.OrdinalIgnoreCase);
@@ -34,6 +35,13 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
     private readonly ICollection<Action<TBlueprint>> _actionSetters = new List<Action<TBlueprint>>();
 
     protected string? DefaultBlueprintKey { get; private set; }
+
+    /// <summary>
+    /// Gets the keys of all registered blueprints, in registration order.
+    /// Useful for verifying blueprint configuration in unit tests.
+    /// </summary>
+    protected IReadOnlyList<string> RegisteredBlueprintKeys
+        => _blueprints.Keys.ToList().AsReadOnly();
 
     internal ITargetReflectionFactory<TTarget> _targetFactoryInstance = new TargetReflectionFactory<TTarget>();
 
@@ -223,6 +231,15 @@ public abstract class BlueprintBuilder<TBuilder, TBlueprint, TTarget>
             yield return Build(currentBlueprintKey, currentBlueprintIndex);
         }
     }
+
+    /// <summary>
+    /// Creates a blueprint instance for the specified key, without applying any <c>Set</c> overrides.
+    /// This is useful for unit testing the blueprint configuration in isolation from the target construction.
+    /// </summary>
+    /// <param name="blueprintKey">The key of the blueprint to create (case-insensitive).</param>
+    /// <returns>A fresh blueprint instance as produced by the registered factory function.</returns>
+    protected TBlueprint CreateBlueprint(string blueprintKey)
+        => CreateSelectedBlueprint(blueprintKey);
 
     private TBlueprint CreateSelectedBlueprint(string? blueprintKey, uint? index = null)
     {

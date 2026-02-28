@@ -331,4 +331,47 @@ public sealed class BlueprintBuilderGenerics3Tests
         Assert.Equal(1, originalTarget.Counter);
         Assert.Equal(2, clonedTarget.Counter);
     }
+
+    [Fact]
+    public void Builder_ShouldImplementIBlueprintBuilder()
+    {
+        // Arrange
+        var builder = BuilderFakeOverridingGetInstance.Create();
+
+        // Act & Assert
+        Assert.IsAssignableFrom<IBlueprintBuilder<TargetFake>>(builder);
+    }
+
+    [Fact]
+    public void RegisteredBlueprintKeys_ShouldReturnAllRegisteredKeysInOrder()
+    {
+        // Arrange
+        var builder = BuilderFakeNoOverridingGetInstance.Create();
+
+        // Act
+        var keys = builder.GetRegisteredBlueprintKeys();
+
+        // Assert
+        Assert.Equal(3, keys.Count);
+        Assert.Equal("default", keys[0]);
+        Assert.Equal("alternative", keys[1]);
+        Assert.Equal("alternative2", keys[2]);
+    }
+
+    [Fact]
+    public void CreateBlueprint_ShouldReturnRawBlueprintWithoutSetOverrides()
+    {
+        // Arrange
+        var builder = BuilderFakeNoOverridingGetInstance.Create()
+            .Set(b => b.Name, "OverriddenName");
+
+        // Act
+        var blueprint = builder.GetBlueprint("alternative");
+
+        // Assert
+        Assert.Equal("alternative", blueprint.BlueprintKey);
+        Assert.Equal("AlternativeName", blueprint.Name);
+        Assert.Equal("AlternativeMetadata", blueprint.Metadata.ToString());
+        Assert.Equal(1, blueprint.Counter);
+    }
 }

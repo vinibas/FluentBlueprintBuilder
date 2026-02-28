@@ -24,6 +24,9 @@ public class BuilderFakeNoOverridingGetInstance : BlueprintBuilder<BuilderFakeNo
     {
         Set(b => b.Counter, b => b.Counter + Index++);
     }
+
+    public IReadOnlyList<string> GetRegisteredBlueprintKeys() => RegisteredBlueprintKeys;
+    public BlueprintFake GetBlueprint(string blueprintKey) => CreateBlueprint(blueprintKey);
 }
 
 public class BuilderFakeOverridingGetInstance : BuilderFakeNoOverridingGetInstance
