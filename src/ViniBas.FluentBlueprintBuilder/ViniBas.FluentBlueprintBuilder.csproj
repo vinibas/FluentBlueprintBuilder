@@ -14,7 +14,7 @@
 
     <PropertyGroup>
         <PackageId>ViniBas.FluentBlueprintBuilder</PackageId>
-        <VersionPrefix>1.1.0</VersionPrefix>
+        <VersionPrefix>1.1.1</VersionPrefix>
         <Authors>Vinícius Bastos da Silva</Authors>
         <Description>A fluent builder library for creating objects with configurable blueprints. Supports pre-configured states and property overrides via fluent syntax. Ideal for unit tests, database seeding, configuration management, domain objects (DDD), and more.</Description>
         <Copyright>Copyright (c) Vinícius Bastos da Silva 2026</Copyright>
@@ -24,7 +24,7 @@
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/vinibas/FluentBlueprintBuilder</RepositoryUrl>
         <PackageTags>FluentBlueprintBuilder;Fluent Builder;Blueprint Builder;Object Builder;Builder Pattern;Fluent API;Factory Pattern;Test Builder;Fake test;ViniBas</PackageTags>
-        <PackageReleaseNotes>Initial release with support for fluent blueprint builders</PackageReleaseNotes>
+        <PackageReleaseNotes>Improve testability with IBlueprintBuilder interface, RegisteredBlueprintKeys, and CreateBlueprint. Creation of the Clone() method.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
