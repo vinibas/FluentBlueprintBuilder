@@ -224,10 +224,11 @@ var service = new OrderService(mockBuilder.Object);
 
 ### Testing the builder configuration
 
-Two protected members are available inside your builder subclass to support unit tests:
+Three protected members are available inside your builder subclass to support unit tests:
 
 - **`RegisteredBlueprintKeys`** — returns an `IReadOnlyList<string>` with the keys of all registered blueprints in registration order. Useful for asserting that blueprints were configured correctly.
 - **`CreateBlueprint(string blueprintKey)`** — returns the raw blueprint instance produced by the factory registered under the given key, without applying any `Set` overrides or calling `GetInstance`. Useful for testing the blueprint configuration in isolation from target construction.
+- **`GetInstance(TBlueprint blueprint)`** — the virtual method that converts a blueprint into a `TTarget`. When overridden, it can be tested in isolation by passing a blueprint directly — without going through key resolution or `Set` overrides.
 
 To access these members from a test without polluting the production builder's public API, create a test-only subclass in your test project that exposes them. Note that `Create()` returns `TBuilder` (the production type), so the helper must be instantiated directly with `new` — the constructor already triggers `ConfigureBlueprints`:
 
@@ -237,6 +238,7 @@ public class UserBuilderTestHelper : UserBuilder
 {
     public new IReadOnlyList<string> RegisteredBlueprintKeys => base.RegisteredBlueprintKeys;
     public UserBlueprint GetBlueprint(string key) => CreateBlueprint(key);
+    public User BuildFromBlueprint(UserBlueprint blueprint) => GetInstance(blueprint);
 }
 ```
 
@@ -259,5 +261,18 @@ public void Blueprint_Admin_ShouldHaveExpectedValues()
 
     Assert.Equal("Admin User", blueprint.Name);
     Assert.Equal(40, blueprint.Age);
+}
+
+[Fact]
+public void GetInstance_Admin_ShouldMapBlueprintToTargetCorrectly()
+{
+    var helper = new UserBuilderTestHelper();
+    // Blueprint can come from ConfigureBlueprints or be constructed manually for edge cases
+    var blueprint = helper.GetBlueprint("admin");
+
+    var target = helper.BuildFromBlueprint(blueprint);
+
+    Assert.Equal("Admin User", target.Name);
+    Assert.Equal(40, target.Age);
 }
 ```
